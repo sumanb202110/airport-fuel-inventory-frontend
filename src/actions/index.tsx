@@ -1,7 +1,11 @@
 export type action = {
-    type: 'USER_LOGIN' | 'USER_LOGOUT' | 'HOME_SET_TAB',
+    type: 'USER_LOGIN' | 'USER_LOGOUT' | 'HOME_SET_TAB' | 'TOASTS_MSG',
     payload: {
-        tabName: string
+        tabName: string ,
+        msg: string,
+        display: boolean,
+        type: 'SUCCESS' | 'ERROR'
+
     }
 }
 
@@ -22,6 +26,16 @@ export const setHomeTab = (tabName: string) => {
         type: 'HOME_SET_TAB',
         payload: {
             tabName: tabName
+        }
+    }
+}
+export const setToasts = (msg: string, display: boolean, type: string) => {
+    return {
+        type: 'TOASTS_MSG',
+        payload: {
+            msg: msg,
+            display: display,
+            type: type
         }
     }
 }

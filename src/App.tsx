@@ -13,12 +13,30 @@ import Transaction from './components/transaction/transaction';
 import FuelConsumptionReport from './components/fuel_consumption_report/FuelConsumptionReport';
 import Logout from './components/logout/Logout';
 import Home from './components/home/Home';
+import Toasts from './components/toasts/Toasts';
+import Signup from './components/signup/Signup';
 
 
 export type state = {
   isLogin: boolean,
   user: object,
-  homeTab: string
+  homeTab: string,
+  toastsMsg: {
+    msg: string,
+    display: boolean,
+    type: string
+  }
+}
+
+export type response = {
+  data: {
+    msg: string
+  },
+  error: {
+    data: {
+      msg: string
+    }
+  }
 }
 
 function App() {
@@ -27,6 +45,7 @@ function App() {
 
   return (
     <div className="App">
+      <Toasts />
       <Router>
         {
           isLogin ?
@@ -54,7 +73,14 @@ function App() {
               </Switch>
             </>
             :
-            <Login />
+            <Switch>
+              <Route exact path="/">
+                <Login />
+              </Route>
+              <Route exact path="/signup">
+                <Signup/>
+              </Route>
+            </Switch>
         }
       </Router>
     </div>

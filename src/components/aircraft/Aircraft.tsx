@@ -1,6 +1,6 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch } from 'react-redux'
-import { setHomeTab } from "../../actions";
+import { setHomeTab, setToasts } from "../../actions";
 import axios from 'axios'
 
 export type aircrafts = {
@@ -46,12 +46,14 @@ const Aircraft: FC = (): ReactElement => {
 
         // api call for create transaction
         axios.post('http://localhost:4000/api/v1/aircrafts', createAircraftData, { withCredentials: true })
-            .then(function (response) {
+            .then(function (response: any) {
                 console.log(response);
+                dispatch(setToasts(response.data.msg,true, 'SUCCESS'))
                 getAircrafts();
             })
             .catch(function (error) {
                 console.log(error);
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
             });
         event.preventDefault()
     }

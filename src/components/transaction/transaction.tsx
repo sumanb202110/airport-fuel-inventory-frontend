@@ -1,7 +1,7 @@
 import axios from "axios";
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { setHomeTab } from "../../actions";
+import { setHomeTab, setToasts } from "../../actions";
 import { aircrafts } from "../aircraft/Aircraft";
 import { airports } from "../airport/Airport";
 
@@ -32,6 +32,8 @@ const Transaction: FC = (): ReactElement => {
         aircraft_id: "",
         quantity: 0
     })
+    const [count, setCount] = useState(10)
+    const [sortBy, setSortBy] = useState("")
 
 
     const dispatch = useDispatch()
@@ -40,16 +42,56 @@ const Transaction: FC = (): ReactElement => {
 
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
+
         setCreateTransactionData({ ...createTransactionData, [target.name]: target.value })
     }
     const handleChangeSelect = (event: React.FormEvent<HTMLSelectElement>) => {
         let target = event.target as HTMLSelectElement
+
         setCreateTransactionData({ ...createTransactionData, [target.name]: target.value })
+
+
     }
+
+    const handleSort = (event: React.FormEvent<HTMLSelectElement>) => {
+        let target = event.target as HTMLSelectElement
+
+        setSortBy(target.value)
+
+
+    }
+
+
+    const handleLoadMore = () => {
+        setCount(count + 10)
+        getTransactions()
+    }
+
     const getTransactions = () => {
-        axios.get<transactions>('http://localhost:4000/api/v1/transactions', { withCredentials: true })
-            .then(function (response) {
+        axios.get<transactions>(`http://localhost:4000/api/v1/transactions`, { withCredentials: true })
+            .then(function (response: any) {
                 setTransactions(response.data)
+            })
+            .catch(function (error: any) {
+                console.log(error)
+                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+            })
+    }
+
+    const getAircrafts = () => {
+        axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
+            .then(function (response) {
+                setAircrafts(response.data)
+            })
+            .catch(function (error: any) {
+                console.log(error)
+            })
+    }
+
+    const getAirports = () => {
+        axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
+            .then(function (response) {
+                setAirports(response.data)
             })
             .catch(function (error: any) {
                 console.log(error)
@@ -63,12 +105,24 @@ const Transaction: FC = (): ReactElement => {
 
         // api call for create transaction
         axios.post('http://localhost:4000/api/v1/transactions', createTransactionData, { withCredentials: true })
-            .then(function (response) {
+            .then(function (response: any) {
                 console.log(response);
+                dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                setCreateTransactionFormHidden(true)
+                setCreateTransactionData(
+                    {
+                        transaction_type: "IN",
+                        airport_id: "",
+                        aircraft_id: "",
+                        quantity: 0
+                    }
+                )
                 getTransactions();
+                getAirports();
             })
             .catch(function (error) {
                 console.log(error);
+                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
         event.preventDefault();
     }
@@ -84,27 +138,25 @@ const Transaction: FC = (): ReactElement => {
 
         getTransactions();
 
-        axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
-            .then(function (response) {
-                setAircrafts(response.data)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-            })
-        axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
-            .then(function (response) {
-                setAirports(response.data)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-            })
+        getAircrafts();
+
+        getAirports();
+
         // eslint-disable-next-line
     }, [])
+
+    
+
+    useEffect(() => {
+        getTransactions()
+    // eslint-disable-next-line
+    }, [count])
     return (
         <div>
             <br />
-            <button type="submit" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary">Create new transaction</button>
+            <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary">Create new transaction</button>
             <br />
+
             <div className={`modal ${createTransactionFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createTransactionFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
@@ -121,14 +173,14 @@ const Transaction: FC = (): ReactElement => {
                                         <div className="mb-3">
                                             <label htmlFor="typeSelect" className="form-label">Type</label>
                                             <select name="transaction_type" onChange={handleChangeSelect} id="typeSelect" className="form-select">
-                                                <option value="">Select transaction type</option>
-                                                <option>IN</option>
-                                                <option>OUT</option>
+                                                <option value={createTransactionData.transaction_type}>Select transaction type</option>
+                                                <option value="IN" >IN</option>
+                                                <option value="OUT" >OUT</option>
                                             </select>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="airportSelect" className="form-label">Airport</label>
-                                            <select name="airport_id" onChange={handleChangeSelect} id="airportSelect" className="form-select">
+                                            <select name="airport_id" value={createTransactionData.airport_id} onChange={handleChangeSelect} id="airportSelect" className="form-select">
                                                 <option value="">Select Airport Name</option>
                                                 {
                                                     airports?.map((airport) => {
@@ -142,7 +194,7 @@ const Transaction: FC = (): ReactElement => {
                                         {createTransactionData.transaction_type === "IN" ? null :
                                             <div className="mb-3">
                                                 <label htmlFor="aircraftSelect" className="form-label">Aircraft</label>
-                                                <select name="aircraft_id" onChange={handleChangeSelect} id="aircraftSelect" className="form-select">
+                                                <select name="aircraft_id" value={createTransactionData.aircraft_id} onChange={handleChangeSelect} id="aircraftSelect" className="form-select">
                                                     <option value="">Select Aircraft Name</option>
                                                     {
                                                         aircrafts?.map((aircraft) => {
@@ -156,9 +208,15 @@ const Transaction: FC = (): ReactElement => {
                                         }
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="quantityInput">
-                                                Quantity
+                                                Quantity(L)
                                             </label>
-                                            <input onChange={handleChange} name="quantity" type="number" min={1} id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
+                                            <input value={createTransactionData.quantity} onChange={handleChange} name="quantity" type="number" min={1}
+                                                max={
+                                                    createTransactionData.transaction_type === 'IN'
+                                                        ? airports?.filter((airport) => airport.airport_id === createTransactionData.airport_id).map(airport => Number(airport?.fuel_capacity) - Number(airport?.fuel_available))[0]
+                                                        : Number(airports?.filter((airport) => airport.airport_id === createTransactionData.airport_id)[0]?.fuel_available)
+                                                }
+                                                id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
                                     </fieldset>
                                 </div>
@@ -176,6 +234,12 @@ const Transaction: FC = (): ReactElement => {
 
             </div>
             <br />
+            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select">
+                <option value="DATE_HIGH_LOW">Sort by date high to low</option>
+                <option value="DATE_LOW_HIGH">Sort by date low to high</option>
+                <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
+                <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
+            </select>
             <div className="container">
                 <div className="row">
                     <div className="col">
@@ -190,7 +254,7 @@ const Transaction: FC = (): ReactElement => {
                     </div>
                     <div className="col">
                         <strong>
-                            Quantity
+                            Quantity(L)
                         </strong>
                     </div>
                     <div className="col">
@@ -211,7 +275,39 @@ const Transaction: FC = (): ReactElement => {
                     <hr />
                 </div>
                 {
-                    transactions?.map((transaction) => {
+                    transactions?.sort(function (a, b) {
+
+                        if (sortBy === "QUANTITY_HIGH_LOW") {
+                            return b.quantity - a.quantity
+                        } else if (sortBy === "QUANTITY_LOW_HIGH") {
+                            return a.quantity - b.quantity
+                        }else if (sortBy === "DATE_LOW_HIGH") {
+                            let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                            let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                            if (dateA < dateB) {
+                                return -1;
+                            }
+                            if (dateA > dateB) {
+                                return 1;
+                            }
+
+                            // names must be equal
+                            return 0;
+                        }
+                        else {
+                            let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                            let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                            if (dateA < dateB) {
+                                return 1;
+                            }
+                            if (dateA > dateB) {
+                                return -1;
+                            }
+
+                            // names must be equal
+                            return 0;
+                        }
+                    }).slice(0, count).map((transaction) => {
                         return (
                             <div className="row" key={transaction.transaction_id}>
                                 <div className="col">
@@ -239,6 +335,15 @@ const Transaction: FC = (): ReactElement => {
                     })
                 }
             </div>
+            {
+                transactions?.length! > count ?
+                    <button type="button" className="btn btn-outline-secondary" onClick={handleLoadMore}>Load More</button>
+                    :
+                    null
+
+            }
+            <br />
+            <br />
         </div>
 
     )

@@ -29,7 +29,7 @@ const HomePieChart: FC<HomePieChartProps> = ({ airports }): ReactElement => {
             {
                 airports?.map((airport) => {
                     return (
-                        <div className="card" style={{ width: "18rem", margin: "5px" }}>
+                        <div key={airport.airport_id.toString()} className="card" style={{ width: "18rem", margin: "5px" }}>
                             <div className="card-body">
                                 <div >
 

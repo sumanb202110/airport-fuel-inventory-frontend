@@ -1,6 +1,6 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { setHomeTab } from "../../actions";
+import { setHomeTab, setToasts } from "../../actions";
 import { airports } from "../airport/Airport";
 import axios from "axios";
 import { transactions } from "../transaction/transaction";
@@ -23,6 +23,7 @@ const Home: FC = (): ReactElement => {
             })
             .catch(function (error: any) {
                 console.log(error)
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
             })
     }
 
@@ -33,6 +34,7 @@ const Home: FC = (): ReactElement => {
             })
             .catch(function (error: any) {
                 console.log(error)
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
             })
     }
 

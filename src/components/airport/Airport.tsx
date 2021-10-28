@@ -1,7 +1,7 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
-import { setHomeTab } from "../../actions";
+import { setHomeTab, setToasts } from "../../actions";
 
 
 export type airports = {
@@ -36,6 +36,7 @@ const Airport: FC = (): ReactElement => {
             })
             .catch(function (error: any) {
                 console.log(error)
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
             })
     }
 
@@ -51,12 +52,14 @@ const Airport: FC = (): ReactElement => {
 
         // api call for create transaction
         axios.post('http://localhost:4000/api/v1/airports', createAirportData, { withCredentials: true })
-            .then(function (response) {
+            .then(function (response: any) {
                 console.log(response);
+                dispatch(setToasts(response.data.msg,true, 'SUCCESS'))
                 getAirports();
             })
             .catch(function (error) {
                 console.log(error);
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
             });
         event.preventDefault();
     }
@@ -101,13 +104,13 @@ const Airport: FC = (): ReactElement => {
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="fuel_capacity">
-                                                Fuel Capacity
+                                                Fuel Capacity(L)
                                             </label>
                                             <input onChange={handleChange} name="fuel_capacity" type="number" min={1} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="fuel_available">
-                                                Fuel Available
+                                                Fuel Available(L)
                                             </label>
                                             <input onChange={handleChange} name="fuel_available" type="number" min={1} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
@@ -141,12 +144,12 @@ const Airport: FC = (): ReactElement => {
                     </div>
                     <div className="col">
                         <strong>
-                            Fuel Capacity
+                            Fuel Capacity(L)
                         </strong>
                     </div>
                     <div className="col">
                         <strong>
-                            Fuel Available
+                            Fuel Available(L)
                         </strong>
                     </div>
                     <hr />

@@ -47,7 +47,7 @@ const HomeSideBar: FC<HomeSideBarProps> = ({ airports, transactions }): ReactEle
                                             <div className="shadow-sm rounded" key={transaction.transaction_id.toString()} style={{ backgroundColor: `${transaction.transaction_type === 'IN' ? '#76ff03' : '#ff8a80'}` }}>
                                                 <p><strong>{transaction.transaction_type === 'IN' ? '+' : '-'}</strong>
                                                     &nbsp;&nbsp;
-                                                    {transaction.quantity}
+                                                    {`${transaction.quantity} L`}
                                                     &nbsp;&nbsp;
                                                     {new Date(transaction.transaction_date_time)
                                                         .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}

@@ -10,7 +10,7 @@ type HomeLineChartProps = {
     transactions: transactions
 }
 
-const colorHex = ["#ff1744", "#1e88e5", "#64ffda", "#aa00ff", "#cddc39", "#7e57c2", "#81c784"]
+const colorHex = ["#ff1744", "#1e88e5", "#64ffda", "#aa00ff", "#cddc39", "#7e57c2", "#81c784", "#0091ea", "#f06292", "#5e35b1", "#eeff41"]
 
 
 const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): ReactElement => {

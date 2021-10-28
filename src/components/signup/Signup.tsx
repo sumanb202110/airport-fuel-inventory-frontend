@@ -1,19 +1,21 @@
 import React, { FC, ReactElement, useState } from "react";
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
-import { login, setToasts } from "../../actions";
+import { setToasts } from "../../actions";
 import { Link } from "react-router-dom";
 
 
-type loginFormData = {
+type signupFormData = {
+    name: "",
     email: string,
     password: string
 }
 
 
 
-const Login: FC = (): ReactElement => {
-    const [loginFormData, setLoginFormData] = useState<loginFormData>({
+const Signup: FC = (): ReactElement => {
+    const [signupFormData, setSignupFormData] = useState<signupFormData>({
+        name: "",
         email: "",
         password: ""
     })
@@ -28,23 +30,22 @@ const Login: FC = (): ReactElement => {
 
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
-        setLoginFormData({ ...loginFormData, [target.name]: target.value })
+        setSignupFormData({ ...signupFormData, [target.name]: target.value })
     }
 
     // Submit form
     const handleSubmit = (event: React.FormEvent) => {
-        console.log(loginFormData)
+        console.log(signupFormData)
 
-        if (!validateEmail(loginFormData.email)) {
+        if (!validateEmail(signupFormData.email)) {
             dispatch(setToasts("Invalid email", true, 'ERROR'))
         } else {
-            // api call for login
-            axios.post('http://localhost:4000/api/v1/users/login', loginFormData, { withCredentials: true })
+            // api call for signup
+            axios.post('http://localhost:4000/api/v1/users', signupFormData, { withCredentials: true })
                 .then(function (response: any) {
                     console.log(response);
-                    dispatch(login())
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                    window.sessionStorage.setItem("isLogin", "true");
+                    window.location.assign("/")
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -59,12 +60,18 @@ const Login: FC = (): ReactElement => {
         <div style={{ width: "50%", marginLeft: "25%", marginTop: "20%" }}>
             <h1>Airport Fuel Inventory</h1>
             <br />
-            <h2>Login</h2>
+            <h2>Signup</h2>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3 row">
-                    <label htmlFor="staticEmail" className="col-sm-2 col-form-label">Email</label>
+            <div className="mb-3 row">
+                    <label htmlFor="inputName" className="col-sm-2 col-form-label">Name</label>
                     <div className="col-sm-10">
-                        <input onChange={handleChange} name="email" type="email" className="form-control" id="staticEmail" />
+                        <input onChange={handleChange} name="name" type="text" className="form-control" id="inputName" />
+                    </div>
+                </div>
+                <div className="mb-3 row">
+                    <label htmlFor="inputEmail" className="col-sm-2 col-form-label">Email</label>
+                    <div className="col-sm-10">
+                        <input onChange={handleChange} name="email" type="email" className="form-control" id="inputEmail" />
                     </div>
                 </div>
                 <div className="mb-3 row">
@@ -74,12 +81,12 @@ const Login: FC = (): ReactElement => {
                     </div>
                 </div>
                 <div className="col-auto">
-                    <button type="submit" className="btn btn-primary mb-3">Login</button>
+                    <button type="submit" className="btn btn-primary mb-3">Signup</button>
                 </div>
             </form >
-            <Link to="/signup">Don't have account signup now.</Link>
+            <Link to="/">Already signedup login now.</Link>
         </div >
     )
 }
 
-export default Login
+export default Signup
