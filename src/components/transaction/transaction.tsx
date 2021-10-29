@@ -33,7 +33,7 @@ const Transaction: FC = (): ReactElement => {
         quantity: 0
     })
     const [count, setCount] = useState(10)
-    const [sortBy, setSortBy] = useState("")
+    const [sortBy, setSortBy] = useState("DATE_HIGH_LOW")
 
 
     const dispatch = useDispatch()
@@ -154,7 +154,7 @@ const Transaction: FC = (): ReactElement => {
     return (
         <div>
             <br />
-            <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary">Create new transaction</button>
+            <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary no-print">Create new transaction</button>
             <br />
 
             <div className={`modal ${createTransactionFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createTransactionFormHidden ? 'none' : 'block'}` }}>
@@ -234,40 +234,41 @@ const Transaction: FC = (): ReactElement => {
 
             </div>
             <br />
-            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select">
+            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select no-print">
                 <option value="DATE_HIGH_LOW">Sort by date high to low</option>
                 <option value="DATE_LOW_HIGH">Sort by date low to high</option>
                 <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
                 <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
             </select>
-            <div className="container">
-                <div className="row">
-                    <div className="col">
+            <br/>
+            <div className="container" >
+                <div className="row justify-content-between">
+                    <div className="col-md-2">
                         <strong>
                             Transaction Date and Time
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-md-2">
                         <strong>
                             Transaction type
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-2">
                         <strong>
-                            Quantity(L)
+                            Quantity (L)
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-2">
                         <strong>
                             Airport Id
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-2">
                         <strong>
                             Aircraft Id
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-2">
                         <strong>
                             Transaction Id of parent
                         </strong>
@@ -309,24 +310,24 @@ const Transaction: FC = (): ReactElement => {
                         }
                     }).slice(0, count).map((transaction) => {
                         return (
-                            <div className="row" key={transaction.transaction_id}>
-                                <div className="col">
+                            <div className="row justify-content-between" key={transaction.transaction_id}>
+                                <div className="col-sm-2">
                                     {new Date(transaction.transaction_date_time)
                                         .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
                                 </div>
-                                <div className="col">
+                                <div className="col-sm-2">
                                     {transaction.transaction_type}
                                 </div>
-                                <div className="col">
+                                <div className="col-2">
                                     {transaction.quantity}
                                 </div>
-                                <div className="col">
+                                <div className="col-2">
                                     {transaction.airport_id}
                                 </div>
-                                <div className="col">
+                                <div className="col-2">
                                     {transaction.aircraft_id}
                                 </div>
-                                <div className="col">
+                                <div className="col-2">
                                     {transaction.transaction_id_parent}
                                 </div>
                                 <hr />
@@ -337,7 +338,7 @@ const Transaction: FC = (): ReactElement => {
             </div>
             {
                 transactions?.length! > count ?
-                    <button type="button" className="btn btn-outline-secondary" onClick={handleLoadMore}>Load More</button>
+                    <button type="button" className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
                     :
                     null
 

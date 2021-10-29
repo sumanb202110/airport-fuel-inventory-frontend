@@ -20,7 +20,8 @@ const HomeSideBar: FC<HomeSideBarProps> = ({ airports, transactions }): ReactEle
             flexWrap: "wrap",
             margin: "15px",
             justifyContent: "center",
-            maxWidth: "40%"
+            maxWidth: "40%",
+            minWidth: "22rem"
         }}>
             {
                 airports?.sort(function (a, b) {

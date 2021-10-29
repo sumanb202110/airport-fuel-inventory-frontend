@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+
+/* ----------------------------------------------------------------mystyle------------------------------------ */
+  @media only screen and (max-width: 600px) {
+    .chart-container{
+      position: relative;
+      height:55vh;
+      width:80vw;
+    }
+  }
+  @media only screen and (min-width: 600px) {
+    .chart-container{
+      position: relative;
+      height:50vh;
+      width:50vw;
+    }
+  }
+
+  @media print {
+   .navbar,.nav, .no-print{
+        display: none;
+    }
+}   

@@ -48,10 +48,7 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
                             return 0;
                         })
                         ?.map((transaction, transactionIndex) => {
-                            // if((transaction.airport_id === airport.airport_id))
-                            // {
-                            //     console.log(transaction.airport_id,transaction.transaction_date_time)
-                            // }
+            
                             if ((transaction.airport_id === airport.airport_id) && (transaction.transaction_type === 'IN')) {
                                 tempQuantity = (Number(tempQuantity) - Number(transaction.quantity))
 
@@ -73,14 +70,14 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
     }
 
     return (
-        <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{ margin: "20px" }}>
+        <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{ margin: "20px" , minWidth: "fit-content"}}>
             <div className='header'>
                 <h1 className='title'>Report</h1>
                 <div className='links'>
 
                 </div>
             </div >
-            <div style={{ width: "100%" }}>
+            <div className="chart-container" >
                 <Line data={{
                     labels: transactions?.map((transaction) => new Date(transaction.transaction_date_time)
                         .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })
@@ -89,7 +86,13 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
                     datasets: lineGraphData()!
                     ,
                 }} options={{
-                    responsive: true,
+                    scales: {
+                        y: {
+                          beginAtZero: false
+                        }
+                      },
+                    maintainAspectRatio: false,
+                    responsive: true
 
                 }} />
             </div>

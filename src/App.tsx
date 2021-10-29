@@ -15,6 +15,7 @@ import Logout from './components/logout/Logout';
 import Home from './components/home/Home';
 import Toasts from './components/toasts/Toasts';
 import Signup from './components/signup/Signup';
+import { useEffect, useState } from 'react';
 
 
 export type state = {
@@ -40,49 +41,88 @@ export type response = {
 }
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(false)
+    // eslint-disable-next-line
+  }, [])
 
   const isLogin = useSelector((state: state) => { return state.isLogin });
 
   return (
     <div className="App">
-      <Toasts />
-      <Router>
-        {
-          isLogin ?
-            <>
-              <Nav />
-              <Switch>
-                <Route exact path="/">
-                  <Home />
-                </Route>
-                <Route exact path="/airports">
-                  <Airport />
-                </Route>
-                <Route exact path="/aircrafts">
-                  <Aircraft />
-                </Route>
-                <Route exact path="/transactions">
-                  <Transaction />
-                </Route>
-                <Route exact path="/reports">
-                  <FuelConsumptionReport />
-                </Route>
-                <Route exact path="/logout">
-                  <Logout />
-                </Route>
-              </Switch>
-            </>
-            :
-            <Switch>
-              <Route exact path="/">
-                <Login />
-              </Route>
-              <Route exact path="/signup">
-                <Signup/>
-              </Route>
-            </Switch>
-        }
-      </Router>
+      {
+        isLoading ?
+          <div style = {{marginTop: "40vh"}}>
+            <div className="spinner-grow text-primary" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-secondary" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-success" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-danger" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-warning" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-info" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div className="spinner-grow text-dark" role="status">
+              <span className="sr-only"></span>
+            </div>
+            <div>Loading.....</div>
+          </div>
+          :
+          <>
+            <Toasts />
+            <Router>
+              {
+                isLogin ?
+                  <>
+                    <Nav />
+                    <Switch>
+                      <Route exact path="/">
+                        <Home />
+                      </Route>
+                      <Route exact path="/airports">
+                        <Airport />
+                      </Route>
+                      <Route exact path="/aircrafts">
+                        <Aircraft />
+                      </Route>
+                      <Route exact path="/transactions">
+                        <Transaction />
+                      </Route>
+                      <Route exact path="/reports">
+                        <FuelConsumptionReport />
+                      </Route>
+                      <Route exact path="/logout">
+                        <Logout />
+                      </Route>
+                    </Switch>
+                  </>
+                  :
+                  <Switch>
+                    <Route exact path="/">
+                      <Login />
+                    </Route>
+                    <Route exact path="/signup">
+                      <Signup />
+                    </Route>
+                  </Switch>
+              }
+            </Router>
+          </>
+
+      }
+
+
     </div>
   );
 }

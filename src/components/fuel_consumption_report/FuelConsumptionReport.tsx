@@ -107,28 +107,29 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                     </button>
                                 </h2>
                                 <div id={`${airport.airport_id}DataContainer`} style={{ display: "none" }}>
-                                    <div className="row">
-                                        <div className="col">
+                                    <br/>
+                                    <div className="row justify-content-around">
+                                        <div className="col-2">
                                             <strong>
                                                 Date/time
                                             </strong>
                                         </div>
-                                        <div className="col">
+                                        <div className="col-2">
                                             <strong>
                                                 Type
                                             </strong>
                                         </div>
-                                        <div className="col">
+                                        <div className="col-2">
                                             <strong>
                                                 Fuel
                                             </strong>
                                         </div>
-                                        <div className="col">
+                                        <div className="col-2">
                                             <strong>
                                                 Aircraft
                                             </strong>
                                         </div>
-                                        <div className="col">
+                                        <div className="col-sm-2">
 
                                         </div>
                                         <hr />
@@ -136,21 +137,21 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                     {
                                         transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.map((transaction) => {
                                             return (
-                                                <div className="row" key={transaction.transaction_id}>
-                                                    <div className="col">
+                                                <div className="row justify-content-around" key={transaction.transaction_id}>
+                                                    <div className="col-2">
                                                         {new Date(transaction.transaction_date_time)
                                                             .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
                                                     </div>
-                                                    <div className="col">
+                                                    <div className="col-2">
                                                         {transaction.transaction_type}
                                                     </div>
-                                                    <div className="col">
+                                                    <div className="col-2">
                                                         {transaction.quantity}
                                                     </div>
-                                                    <div className="col">
+                                                    <div className="col-2">
                                                         {transaction.aircraft_id}
                                                     </div>
-                                                    <div className="col-sm                                                                                                                                                                                                                                      ">
+                                                    <div className="col-sm-2">
                                                         <button type="button" onClick={() => {
                                                             revertTransaction({
                                                                 transaction_type: `${transaction.transaction_type === 'IN' ? 'OUT' : 'IN'}`,

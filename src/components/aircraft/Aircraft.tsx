@@ -118,17 +118,17 @@ const Aircraft: FC = (): ReactElement => {
             <br />
             <div className="container">
                 <div className="row">
-                    <div className="col">
+                    <div className="col-4">
                         <strong>
                             Aircraft Id
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-4">
                         <strong>
                             Aircraft No
                         </strong>
                     </div>
-                    <div className="col">
+                    <div className="col-4">
                         <strong>
                             Airline
                         </strong>
@@ -139,13 +139,13 @@ const Aircraft: FC = (): ReactElement => {
                     aircrafts?.map((aircraft) => {
                         return (
                             <div className="row" key={aircraft.aircraft_id}>
-                                <div className="col">
+                                <div className="col-4">
                                     {aircraft.aircraft_id}
                                 </div>
-                                <div className="col">
+                                <div className="col-4">
                                     {aircraft.aircraft_no}
                                 </div>
-                                <div className="col">
+                                <div className="col-4">
                                     {aircraft.airline}
                                 </div>
                                 <hr />

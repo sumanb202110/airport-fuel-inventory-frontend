@@ -18,7 +18,7 @@ const HomePieChart: FC<HomePieChartProps> = ({ airports }): ReactElement => {
             display: "flex",
             flexDirection: "row",
             flexWrap: "wrap",
-            minWidth: "60%",
+            minWidth: "21rem",
             // height: "50%",
             margin: "20px",
             // justifyContent: "space-around",
