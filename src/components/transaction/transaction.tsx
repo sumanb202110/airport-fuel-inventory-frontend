@@ -39,7 +39,7 @@ const Transaction: FC = (): ReactElement => {
     const dispatch = useDispatch()
 
 
-
+    // Handle change for create transacion
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
 
@@ -155,6 +155,7 @@ const Transaction: FC = (): ReactElement => {
         <div>
             <br />
             <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary no-print">Create new transaction</button>
+            <button onClick={()=> { window.print()}} className="btn btn-outline-secondary no-print" style={{right: "5px", position: "absolute"}}>Print</button>
             <br />
 
             <div className={`modal ${createTransactionFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createTransactionFormHidden ? 'none' : 'block'}` }}>

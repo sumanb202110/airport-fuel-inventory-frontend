@@ -22,12 +22,14 @@ const Signup: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
+    // Email validation function
     const validateEmail = (email: string) => {
         // eslint-disable-next-line
         const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
     }
 
+    // Signup form handle change
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setSignupFormData({ ...signupFormData, [target.name]: target.value })

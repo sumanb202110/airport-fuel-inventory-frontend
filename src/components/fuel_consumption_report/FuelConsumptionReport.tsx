@@ -75,6 +75,9 @@ const FuelConsumptionReport: FC = (): ReactElement => {
             });
     }
 
+
+
+    // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('FUEL_CONSUMPTION_REPORT'))
         getAirports()
@@ -84,6 +87,10 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     }, [])
     return (
         <div>
+            <br/>
+            <button onClick={()=> { window.print()}} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute"}}>Print</button>
+            <br/>
+            <br/>
             {
                 airports?.sort(function (a, b) {
                     var nameA = a.airport_name.toUpperCase(); // ignore upper and lowercase
@@ -160,7 +167,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                                                 quantity: transaction.quantity,
                                                                 transaction_id_parent: transaction.transaction_id
                                                             })
-                                                        }} className="btn btn-danger">
+                                                        }} className="btn btn-danger no-print">
                                                             Revert
                                                         </button>
                                                     </div>

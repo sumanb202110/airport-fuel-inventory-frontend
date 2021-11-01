@@ -20,12 +20,14 @@ const Login: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
+    // Email validation function
     const validateEmail = (email: string) => {
         // eslint-disable-next-line
         const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
     }
 
+    // Login form change handler
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setLoginFormData({ ...loginFormData, [target.name]: target.value })

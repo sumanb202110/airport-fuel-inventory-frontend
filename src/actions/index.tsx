@@ -9,18 +9,21 @@ export type action = {
     }
 }
 
+// Login action
 export const login = () => {
     return {
         type: 'USER_LOGIN'
     }
 }
 
+// Logout action
 export const logout = () => {
     return {
         type: 'USER_LOGOUT'
     }
 }
 
+// Home tab action
 export const setHomeTab = (tabName: string) => {
     return {
         type: 'HOME_SET_TAB',
@@ -29,6 +32,8 @@ export const setHomeTab = (tabName: string) => {
         }
     }
 }
+
+// Toast message action
 export const setToasts = (msg: string, display: boolean, type: string) => {
     return {
         type: 'TOASTS_MSG',

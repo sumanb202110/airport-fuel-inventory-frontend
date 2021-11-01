@@ -31,6 +31,7 @@ const Airport: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
+    // handle airport sort function
     const handleSort = (event: React.FormEvent<HTMLSelectElement>) => {
         let target = event.target as HTMLSelectElement
 
@@ -40,6 +41,7 @@ const Airport: FC = (): ReactElement => {
     }
 
 
+    // Get airport function
     const getAirports = () => {
         axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
             .then(function (response) {
@@ -52,12 +54,13 @@ const Airport: FC = (): ReactElement => {
     }
 
 
+    // Handle create airport form change
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setCreateAirportData({ ...createAirportData, [target.name]: target.value })
     }
 
-    // Submit form
+    // Submit form to create airport handle function
     const handleSubmit = (event: React.FormEvent) => {
         console.log(createAirportData)
 
@@ -75,6 +78,9 @@ const Airport: FC = (): ReactElement => {
         event.preventDefault();
     }
 
+
+
+    // Initial loading
     useEffect(() => {
         dispatch(setHomeTab('AIRPORT'))
         getAirports();
@@ -85,7 +91,7 @@ const Airport: FC = (): ReactElement => {
     return (
         <div>
             <br />
-            <button type="submit" onClick={() => { setCreateAirportFormHidden(false) }} className="btn btn-primary">Create new Airport</button>
+            <button type="submit" onClick={() => { setCreateAirportFormHidden(false) }} className="btn btn-primary no-print">Create new Airport</button>
             <br />
             <div className={`modal ${createAirportFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAirportFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
@@ -142,7 +148,7 @@ const Airport: FC = (): ReactElement => {
 
             </div>
             <br />
-            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select">
+            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select no-print">
                 <option value="NAME_A_Z">Sort by Name A to Z</option>
                 <option value="NAME_Z_A">Sort by Name Z to A</option>
                 <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>

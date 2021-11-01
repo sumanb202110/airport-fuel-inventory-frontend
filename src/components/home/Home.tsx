@@ -13,9 +13,10 @@ const Home: FC = (): ReactElement => {
     const [airports, setAirports] = useState<airports>()
     const [transactions, setTransactions] = useState<transactions>()
 
+    const dispatch = useDispatch()
 
 
-
+    // Get airports function
     const getAirports = () => {
         axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
             .then(function (response) {
@@ -27,6 +28,7 @@ const Home: FC = (): ReactElement => {
             })
     }
 
+    // Get transactions function
     const getTransactions = () => {
         axios.get<transactions>('http://localhost:4000/api/v1/transactions', { withCredentials: true })
             .then(function (response) {
@@ -39,10 +41,10 @@ const Home: FC = (): ReactElement => {
     }
 
 
-    const dispatch = useDispatch()
 
 
 
+    // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('HOME'))
         getAirports();

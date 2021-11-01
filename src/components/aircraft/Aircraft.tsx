@@ -23,8 +23,10 @@ const Aircraft: FC = (): ReactElement => {
         aircraft_no: "",
         airline: ""
     })
+
     const dispatch = useDispatch()
 
+    // Get aircraft function
     const getAircrafts = () => {
         axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
             .then(function (response) {
@@ -35,12 +37,13 @@ const Aircraft: FC = (): ReactElement => {
             })
     }
 
+    // handle create aircraft form input change function
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setCreateAircraftData({ ...createAircraftData, [target.name]: target.value })
     }
 
-    // Submit form
+    // Submit form to create aircraft
     const handleSubmit = (event: React.FormEvent) => {
         console.log(createAircraftData)
 
@@ -57,6 +60,8 @@ const Aircraft: FC = (): ReactElement => {
             });
         event.preventDefault()
     }
+
+    // Initial data load
     useEffect(() => {
         dispatch(setHomeTab('AIRCRAFT'))
         getAircrafts();
@@ -66,7 +71,7 @@ const Aircraft: FC = (): ReactElement => {
     return (
         <div>
             <br />
-            <button type="submit" onClick={() => { setCreateAircraftFormHidden(false) }} className="btn btn-primary">Create new Aircraft</button>
+            <button type="submit" onClick={() => { setCreateAircraftFormHidden(false) }} className="btn btn-primary no-print">Create new Aircraft</button>
             <br />
             <div className={`modal ${createAircraftFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAircraftFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
