@@ -1,7 +1,7 @@
-import React, { FC, ReactElement, useState } from "react";
+import React, { FC, ReactElement, useEffect, useState } from "react";
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
-import { login, setToasts } from "../../actions";
+import { login, setToasts, setUserDetails } from "../../actions";
 import { Link } from "react-router-dom";
 
 
@@ -33,6 +33,16 @@ const Login: FC = (): ReactElement => {
         setLoginFormData({ ...loginFormData, [target.name]: target.value })
     }
 
+    // Check email on change
+    useEffect(()=>{
+        if (!validateEmail(loginFormData.email)) {
+            dispatch(setToasts("Invalid email", true, 'ERROR'))
+        }else{
+            dispatch(setToasts("", false, 'SUCCESS'))
+        }
+    // eslint-disable-next-line
+    },[loginFormData.email])
+
     // Submit form
     const handleSubmit = (event: React.FormEvent) => {
         console.log(loginFormData)
@@ -45,6 +55,7 @@ const Login: FC = (): ReactElement => {
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(login())
+                    dispatch(setUserDetails(response.data.email))
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
                     window.sessionStorage.setItem("isLogin", "true");
                 })

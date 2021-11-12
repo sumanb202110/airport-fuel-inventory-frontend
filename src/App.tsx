@@ -6,10 +6,10 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-import Aircraft from "../src/components/aircraft/Aircraft";
-import Airport from "../src/components/airport/Airport";
+import Aircraft, { aircrafts } from "../src/components/aircraft/Aircraft";
+import Airport, { airports } from "../src/components/airport/Airport";
 import Login from './components/login/Login';
-import Transaction from './components/transaction/transaction';
+import Transaction, { transaction, transactions } from './components/transaction/transaction';
 import FuelConsumptionReport from './components/fuel_consumption_report/FuelConsumptionReport';
 import Logout from './components/logout/Logout';
 import Home from './components/home/Home';
@@ -20,8 +20,20 @@ import { useEffect, useState } from 'react';
 
 export type state = {
   isLogin: boolean,
-  user: object,
+  user: {
+    email: string
+  },
   homeTab: string,
+  transactions?:{
+    data: transactions
+  },
+  selectedTransaction: transaction,
+  airports?:{
+    data: airports
+  },
+  aircrafts?:{
+    data: aircrafts
+  },
   toastsMsg: {
     msg: string,
     display: boolean,

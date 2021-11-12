@@ -1,9 +1,10 @@
-const userReducer = (state = {}, action: any) => {
+const userReducer = (state = {email: window.sessionStorage.getItem("user_email")}, action: any) => {
     switch (action.type) {
         case 'USER_SET_DETAILS':
-            return state;
+            window.sessionStorage.setItem("user_email", action.payload.user.email);
+            return {...state, email: action.payload.user.email};
         default:
-            return state;
+            return {...state};
     }
 };
 

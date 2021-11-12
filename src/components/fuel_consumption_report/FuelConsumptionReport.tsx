@@ -1,34 +1,25 @@
 import axios from "axios";
-import { FC, ReactElement, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
-import { setHomeTab, setToasts } from "../../actions";
-import { airports } from "../airport/Airport";
-
-type transactions = {
-    transaction_id: string,
-    transaction_date_time: string,
-    transaction_type: string,
-    airport_id: string,
-    aircraft_id: string,
-    quantity: string,
-    transaction_id_parent: string
-}[]
-
-type transaction = {
-    transaction_type: string,
-    airport_id: string,
-    aircraft_id: string,
-    quantity: string,
-    transaction_id_parent: string
-}
+import { FC, ReactElement, useEffect} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getAirports, getTransactions, setHomeTab, setToasts } from "../../actions";
+import { state } from "../../App";
+// import { airports } from "../airport/Airport";
+import { transaction} from "../transaction/transaction";
 
 const FuelConsumptionReport: FC = (): ReactElement => {
-    const [airports, setAirports] = useState<airports>()
-    const [transactions, setTransactions] = useState<transactions>()
+    // const [airports, setAirports] = useState<airports>()
+    // const [transactions, setTransactions] = useState<transactions>()
     const dispatch = useDispatch()
 
+    // retrive transactions data from redux
+    const transactions = useSelector((state: state) => { return state.transactions!.data });
+
+    // retrive airports data from redux
+    const airports = useSelector((state: state) => { return state.airports!.data });
+
+
     const handleAirportToggle = (id: string) => {
-        const airportDiv = document.querySelector(`#${id}`) as HTMLVideoElement
+        const airportDiv = document.querySelector(`#${id}`) as HTMLDivElement
         if (airportDiv.style.display === "none") {
             airportDiv.style.display = "block"
         } else {
@@ -36,29 +27,29 @@ const FuelConsumptionReport: FC = (): ReactElement => {
         }
     }
 
-    // Get airport details
-    const getAirports = () => {
-        axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
-            .then(function (response) {
-                setAirports(response.data)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            })
-    }
+    // // Get airport details
+    // const getAirports = () => {
+    //     axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
+    //         .then(function (response) {
+    //             setAirports(response.data)
+    //         })
+    //         .catch(function (error: any) {
+    //             console.log(error)
+    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+    //         })
+    // }
 
-    // Get transactions
-    const getTransactions = () => {
-        axios.get<transactions>('http://localhost:4000/api/v1/transactions', { withCredentials: true })
-            .then(function (response) {
-                setTransactions(response.data)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            })
-    }
+    // // Get transactions
+    // const getTransactions = () => {
+    //     axios.get<transactions>('http://localhost:4000/api/v1/transactions', { withCredentials: true })
+    //         .then(function (response) {
+    //             setTransactions(response.data)
+    //         })
+    //         .catch(function (error: any) {
+    //             console.log(error)
+    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+    //         })
+    // }
 
     // Revert transaction 
     const revertTransaction = (revertTransactionData: transaction) => {
@@ -67,7 +58,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                getTransactions();
+                dispatch(getTransactions());
             })
             .catch(function (error) {
                 console.log(error);
@@ -80,8 +71,8 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('FUEL_CONSUMPTION_REPORT'))
-        getAirports()
-        getTransactions()
+        dispatch(getAirports())
+        dispatch(getTransactions())
 
         // eslint-disable-next-line
     }, [])
@@ -104,18 +95,18 @@ const FuelConsumptionReport: FC = (): ReactElement => {
 
                     // names must be equal
                     return 0;
-                }).map((airport) => {
+                }).map((airport, airportIndex) => {
                     return (
-                        <div key={airport.airport_id.toString()} className="container accordion">
+                        <div key={airport.airport_id.toString()} className="container accordion" style={{backgroundColor: "#eeeeee"}}>
                             <div className="accordion-item">
                                 <h2 className="accordion-header" id="headingOne" onClick={() => handleAirportToggle(`${airport.airport_id}DataContainer`)}>
-                                    <button className="btn btn-outline-info" type="button" style={{width: "100%"}}>
+                                    <button className="btn btn-outline" type="button" style={{width: "100%"}}>
                                     Airport: {airport.airport_name} 
                                     </button>
                                 </h2>
                                 <div id={`${airport.airport_id}DataContainer`} style={{ display: "none" }}>
                                     <br/>
-                                    <div className="row justify-content-around">
+                                    <div className="row justify-content-around" style={{backgroundColor: "#1a237e", color: "#ffffff"}}>
                                         <div className="col-2">
                                             <strong>
                                                 Date/time
@@ -139,12 +130,12 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                         <div className="col-sm-2">
 
                                         </div>
-                                        <hr />
+                                        {/* <hr /> */}
                                     </div>
                                     {
-                                        transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.map((transaction) => {
+                                        transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.map((transaction, transactionIndex) => {
                                             return (
-                                                <div className="row justify-content-around" key={transaction.transaction_id}>
+                                                <div className="row justify-content-around" key={transaction.transaction_id} style={{alignItems: "center", backgroundColor: `${transactionIndex %2 !== 0 ? "#eeeeee":""}`}}>
                                                     <div className="col-2">
                                                         {new Date(transaction.transaction_date_time)
                                                             .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
@@ -156,14 +147,14 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                                         {transaction.quantity}
                                                     </div>
                                                     <div className="col-2">
-                                                        {transaction.aircraft_id}
+                                                        {transaction.aircraft_id === "" ? "---": transaction.aircraft_id}
                                                     </div>
                                                     <div className="col-sm-2">
                                                         <button type="button" onClick={() => {
                                                             revertTransaction({
                                                                 transaction_type: `${transaction.transaction_type === 'IN' ? 'OUT' : 'IN'}`,
                                                                 airport_id: transaction.airport_id,
-                                                                aircraft_id: '',
+                                                                aircraft_id: `${transaction.transaction_type === 'IN' ? 'NA' : ''}`,
                                                                 quantity: transaction.quantity,
                                                                 transaction_id_parent: transaction.transaction_id
                                                             })
@@ -171,8 +162,8 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                                             Revert
                                                         </button>
                                                     </div>
-                                                    <hr />
                                                 </div>
+
                                             )
                                         })
                                     }

@@ -1,7 +1,10 @@
 import { FC, ReactElement, useEffect, useState } from "react";
-import { useDispatch } from 'react-redux'
-import { setHomeTab, setToasts } from "../../actions";
+import { useDispatch, useSelector } from 'react-redux'
+import { getAircrafts, setHomeTab, setToasts } from "../../actions";
 import axios from 'axios'
+import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
+import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
+import { state } from "../../App";
 
 export type aircrafts = {
     aircraft_id: string,
@@ -16,7 +19,7 @@ export type aircraft = {
 }
 
 const Aircraft: FC = (): ReactElement => {
-    const [aircrafts, setAircrafts] = useState<aircrafts>()
+    // const [aircrafts, setAircrafts] = useState<aircrafts>()
     const [createAircraftFormHidden, setCreateAircraftFormHidden] = useState<boolean>(true)
     const [createAircraftData, setCreateAircraftData] = useState<aircraft>({
         aircraft_id: "",
@@ -24,27 +27,37 @@ const Aircraft: FC = (): ReactElement => {
         airline: ""
     })
 
+    const [updateAircraftFormHidden, setUpdateAircraftFormHidden] = useState<boolean>(true)
+    const [updateAircraftData, setUpdateAircraftData] = useState<aircraft>({
+        aircraft_id: "",
+        aircraft_no: "",
+        airline: ""
+    })
+
     const dispatch = useDispatch()
 
+     // retrive aircrafts data from redux
+     const aircrafts = useSelector((state: state) => { return state.aircrafts!.data });
+
     // Get aircraft function
-    const getAircrafts = () => {
-        axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
-            .then(function (response) {
-                setAircrafts(response.data)
-            })
-            .catch(function (error: any) {
-                console.log(error)
-            })
-    }
+    // const getAircrafts = () => {
+    //     axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
+    //         .then(function (response) {
+    //             setAircrafts(response.data)
+    //         })
+    //         .catch(function (error: any) {
+    //             console.log(error)
+    //         })
+    // }
 
     // handle create aircraft form input change function
-    const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
+    const handleAircraftCreateFormChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setCreateAircraftData({ ...createAircraftData, [target.name]: target.value })
     }
 
     // Submit form to create aircraft
-    const handleSubmit = (event: React.FormEvent) => {
+    const handleAircraftCreateFormSubmit = (event: React.FormEvent) => {
         console.log(createAircraftData)
 
         // api call for create transaction
@@ -52,7 +65,10 @@ const Aircraft: FC = (): ReactElement => {
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts(response.data.msg,true, 'SUCCESS'))
-                getAircrafts();
+                setCreateAircraftFormHidden(true)
+                const targetForm = event.target as HTMLFormElement
+                targetForm.reset()
+                dispatch(getAircrafts());
             })
             .catch(function (error) {
                 console.log(error);
@@ -61,10 +77,51 @@ const Aircraft: FC = (): ReactElement => {
         event.preventDefault()
     }
 
+    // handle update aircraft form input change function
+    const handleAircraftUpdateFormChange = (event: React.FormEvent<HTMLInputElement>) => {
+        let target = event.target as HTMLInputElement
+        setUpdateAircraftData({ ...updateAircraftData, [target.name]: target.value })
+    }
+
+    // Submit form to create aircraft
+    const handleAircraftUpdateFormSubmit = (event: React.FormEvent) => {
+        console.log(updateAircraftData)
+
+        // api call for create transaction
+        axios.patch('http://localhost:4000/api/v1/aircrafts', updateAircraftData, { withCredentials: true })
+            .then(function (response: any) {
+                console.log(response);
+                dispatch(setToasts(response.data.msg,true, 'SUCCESS'))
+                setUpdateAircraftFormHidden(true)
+                dispatch(getAircrafts());
+            })
+            .catch(function (error) {
+                console.log(error);
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
+            });
+        event.preventDefault()
+    }
+
+    // Submit form to create aircraft
+    const handleDeleteAircraft = (aircraft_id: string) => {
+
+        // api call for delete transaction
+        axios.delete(`http://localhost:4000/api/v1/aircrafts/${aircraft_id}`, { withCredentials: true })
+            .then(function (response: any) {
+                console.log(response);
+                dispatch(setToasts("Aircraft successfully deleted.",true, 'SUCCESS'))
+                dispatch(getAircrafts());
+            })
+            .catch(function (error) {
+                console.log(error);
+                dispatch(setToasts(error.response.data.msg,true, 'ERROR'))
+            });
+    }
+
     // Initial data load
     useEffect(() => {
         dispatch(setHomeTab('AIRCRAFT'))
-        getAircrafts();
+        dispatch(getAircrafts());
 
         // eslint-disable-next-line
     }, [])
@@ -76,7 +133,7 @@ const Aircraft: FC = (): ReactElement => {
             <div className={`modal ${createAircraftFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAircraftFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleAircraftCreateFormSubmit}>
                             <div className="modal-header">
                                 <button type="button" onClick={() => { setCreateAircraftFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
 
@@ -91,19 +148,19 @@ const Aircraft: FC = (): ReactElement => {
                                             <label className="form-check-label" htmlFor="aircraft_id">
                                                 Aircraft Id
                                             </label>
-                                            <input onChange={handleChange} name="aircraft_id" type="text" id="aircraft_id" className="form-control" placeholder="Aircraft Id" />
+                                            <input onChange={handleAircraftCreateFormChange} name="aircraft_id" type="text" id="aircraft_id" className="form-control" placeholder="Aircraft Id" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="aircraft_no">
                                                 Aircraft No
                                             </label>
-                                            <input onChange={handleChange} name="aircraft_no" type="text" id="aircraft_no" className="form-control" placeholder="Aircraft No" />
+                                            <input onChange={handleAircraftCreateFormChange} name="aircraft_no" type="text" id="aircraft_no" className="form-control" placeholder="Aircraft No" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="airline">
                                                 Airline
                                             </label>
-                                            <input onChange={handleChange} name="airline" type="text" id="airline" className="form-control" placeholder="Airline" />
+                                            <input onChange={handleAircraftCreateFormChange} name="airline" type="text" id="airline" className="form-control" placeholder="Airline" />
                                         </div>
                                     </fieldset>
                                 </div>
@@ -120,15 +177,66 @@ const Aircraft: FC = (): ReactElement => {
                 </div>
 
             </div>
+            <div className={`modal ${updateAircraftFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${updateAircraftFormHidden ? 'none' : 'block'}` }}>
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <form onSubmit={handleAircraftUpdateFormSubmit}>
+                            <div className="modal-header">
+                                <button type="button" onClick={() => { setUpdateAircraftFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                            </div>
+                            <div className="modal-body">
+                                <div>
+
+                                    <fieldset >
+                                        <legend>Update Aircraft</legend>
+
+                                        <div className="mb-3">
+                                            <label className="form-check-label" htmlFor="aircraft_id">
+                                                Aircraft Id
+                                            </label>
+                                            <input onChange={handleAircraftUpdateFormChange} value={updateAircraftData.aircraft_id} name="aircraft_id" type="text" id="aircraft_id" className="form-control" placeholder="Aircraft Id" />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-check-label" htmlFor="aircraft_no">
+                                                Aircraft No
+                                            </label>
+                                            <input onChange={handleAircraftUpdateFormChange} value={updateAircraftData.aircraft_no} name="aircraft_no" type="text" id="aircraft_no" className="form-control" placeholder="Aircraft No" />
+                                        </div>
+                                        <div className="mb-3">
+                                            <label className="form-check-label" htmlFor="airline">
+                                                Airline
+                                            </label>
+                                            <input onChange={handleAircraftUpdateFormChange} value={updateAircraftData.airline} name="airline" type="text" id="airline" className="form-control" placeholder="Airline" />
+                                        </div>
+                                    </fieldset>
+                                </div>
+
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" onClick={() => { setUpdateAircraftFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" className="btn btn-primary">Update</button>
+
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
             <br />
             <div className="container">
-                <div className="row">
-                    <div className="col-4">
+                <div className="row" style={{
+                    alignItems: "center",
+                    backgroundColor: "#1a237e",
+                    color: "#ffffff"
+                }}>
+                    <div className="col-3">
                         <strong>
                             Aircraft Id
                         </strong>
                     </div>
-                    <div className="col-4">
+                    <div className="col-3">
                         <strong>
                             Aircraft No
                         </strong>
@@ -138,22 +246,69 @@ const Aircraft: FC = (): ReactElement => {
                             Airline
                         </strong>
                     </div>
-                    <hr />
+                    {/* <hr />  */}
                 </div>
                 {
-                    aircrafts?.map((aircraft) => {
+                    aircrafts?.map((aircraft, aircraftIndex) => {
                         return (
-                            <div className="row" key={aircraft.aircraft_id}>
-                                <div className="col-4">
+                            <div className="row" key={aircraft.aircraft_id} style={{
+                                alignItems: "center",
+                                backgroundColor: aircraftIndex % 2 !== 0 ? "#eeeeee" : ""
+                            }}
+                            id={`row${aircraft.aircraft_id}`} 
+                            onMouseOver={
+                                ()=>{
+                                    const row = document.querySelector(`#row${aircraft.aircraft_id}`) as HTMLDivElement 
+                                    row.style.backgroundColor = "#76ff03"
+                            }} 
+                            onMouseOut={
+                                ()=>{
+                                    const row = document.querySelector(`#row${aircraft.aircraft_id}`) as HTMLDivElement 
+                                    row.style.backgroundColor = aircraftIndex % 2 !== 0 ? "#eeeeee" : ""
+                                }}
+                            >
+                                <div className="col-3">
                                     {aircraft.aircraft_id}
                                 </div>
-                                <div className="col-4">
+                                <div className="col-3">
                                     {aircraft.aircraft_no}
                                 </div>
                                 <div className="col-4">
                                     {aircraft.airline}
                                 </div>
-                                <hr />
+                                <div className="col-2">
+                                    <button style={
+                                        {
+                                            backgroundColor: aircraftIndex % 2 !== 0 ? "#eeeeee" : "white",
+                                            border: "none",
+                                            borderRadius: "5px"
+                                        }
+                                    } onClick={() => {
+                                        setUpdateAircraftData(
+                                            {
+                                                aircraft_id: aircraft.aircraft_id,
+                                                aircraft_no: aircraft.aircraft_no,
+                                                airline: aircraft.airline
+                                            }
+                                        );
+                                        setUpdateAircraftFormHidden(false)
+                                    }}>
+                                        <EditBlack />
+                                    </button>
+                                    <span style={{ padding: "5px" }}></span>
+                                    <button
+                                        style={
+                                            {
+                                                backgroundColor: aircraftIndex % 2 !== 0 ? "#eeeeee" : "white",
+                                                border: "none",
+                                                borderRadius: "5px"
+                                            }
+                                        }
+                                        onClick={() => { handleDeleteAircraft(aircraft.aircraft_id.toString()) }}>
+                                        <DeleteBlack />
+                                    </button>
+                                </div>
+                                {/* <hr /> */}
                             </div>
                         )
                     })

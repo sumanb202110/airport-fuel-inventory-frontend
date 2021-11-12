@@ -1,4 +1,4 @@
-import React, { FC, ReactElement, useState } from "react";
+import React, { FC, ReactElement, useEffect, useState } from "react";
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { setToasts } from "../../actions";
@@ -29,11 +29,39 @@ const Signup: FC = (): ReactElement => {
         return re.test(email);
     }
 
+    // Password check
+    const validatePassword = (password: string) => {
+        // eslint-disable-next-line
+        const re = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\\S+$).{8, 20}$/
+        return re.test(password);
+    }
+
     // Signup form handle change
     const handleChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setSignupFormData({ ...signupFormData, [target.name]: target.value })
     }
+
+     // Check email on change
+     useEffect(()=>{
+        if (!validateEmail(signupFormData.email)) {
+            dispatch(setToasts("Invalid email", true, 'ERROR'))
+        }else{
+            dispatch(setToasts("", false, 'SUCCESS'))
+        }
+    // eslint-disable-next-line
+    },[signupFormData.email])
+
+    // Check password onchange
+    useEffect(()=>{
+        if (!validatePassword(signupFormData.password)) {
+            dispatch(setToasts(`Password must be of length 8 to 30 which contains one digit, one uppercase alphabet, one lower case alphabet,
+             one special character which includes !@#$%&*()-+=^ and doesn’t contain any white space`, true, 'ERROR'))
+        }else{
+            dispatch(setToasts("", false, 'SUCCESS'))
+        }
+    // eslint-disable-next-line
+    },[signupFormData.password])
 
     // Submit form
     const handleSubmit = (event: React.FormEvent) => {
@@ -41,7 +69,10 @@ const Signup: FC = (): ReactElement => {
 
         if (!validateEmail(signupFormData.email)) {
             dispatch(setToasts("Invalid email", true, 'ERROR'))
-        } else {
+        }else if (!validatePassword(signupFormData.password)) {
+            dispatch(setToasts(`Password must be of length 8 to 30 which contains one digit, one uppercase alphabet, one lower case alphabet,
+             one special character which includes !@#$%&*()-+=^ and doesn’t contain any white space`, true, 'ERROR'))
+        }else {
             // api call for signup
             axios.post('http://localhost:4000/api/v1/users', signupFormData, { withCredentials: true })
                 .then(function (response: any) {
@@ -81,12 +112,14 @@ const Signup: FC = (): ReactElement => {
                     <div className="col-sm-10">
                         <input onChange={handleChange} name="password" type="password" className="form-control" id="inputPassword" />
                     </div>
+                    <p style={{fontSize: "10px"}}>Password must be of length 8 to 30 which contains one digit, one uppercase alphabet, one lower case alphabet,
+             one special character which includes !@#$%&amp;*()-+=^ and doesn’t contain any white space</p>
                 </div>
                 <div className="col-auto">
                     <button type="submit" className="btn btn-primary mb-3">Signup</button>
                 </div>
             </form >
-            <Link to="/">Already signedup login now.</Link>
+            <Link to="/">Have an account, login now.</Link>
         </div >
     )
 }
