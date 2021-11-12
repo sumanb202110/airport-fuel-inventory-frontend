@@ -5,12 +5,20 @@ import { airports } from "../components/airport/Airport"
 import { transaction, transactions } from "../components/transaction/transaction"
 
 export type action = {
-    type: 'USER_LOGIN' | 'USER_LOGOUT' | 'HOME_SET_TAB' | 'TOASTS_MSG' | 'GET_TRANSACTIONS' | 'GET_AIRPORTS' | 'GET_AIRCRAFTS' | 'SET_SELECTED_TRANSACTION',
+    type: 'USER_LOGIN' | 'USER_LOGOUT' | 'HOME_SET_TAB' |
+     'TOASTS_MSG' | 'GET_TRANSACTIONS' | 'GET_AIRPORTS' |
+      'GET_AIRCRAFTS' | 'SET_SELECTED_TRANSACTION' | 'SET_UPDATE_TRANSACTION_DATA'|
+      'SET_UPDATE_TRANSACTION_FORM_HIDDEN' | 'SET_DELETE_TRANSACTION_DATA' | 
+      'SET_DELETE_TRANSACTION_FORM_HIDDEN'
+      ,
     payload: {
         tabName: string,
         msg: string,
         display: boolean,
         selectedTransaction: transaction,
+        status: boolean,
+        updateTransactionData: transaction,
+        deleteTransactionData: transaction,
         type: 'SUCCESS' | 'ERROR'
 
     }
@@ -86,6 +94,46 @@ export const setSelectedTransaction = (selectedTransaction: transaction) => {
         type: 'SET_SELECTED_TRANSACTION',
         payload: {
             selectedTransaction: selectedTransaction
+        }
+    }
+}
+
+// Update transaction action
+export const setUpdateTransactionData = (updateTransactionData: transaction) => {
+    return {
+        type: 'SET_UPDATE_TRANSACTION_DATA',
+        payload: {
+            updateTransactionData: updateTransactionData
+        }
+    }
+}
+
+// Update transaction form hidden action
+export const setUpdateTransactionFormHidden = (status: boolean) => {
+    return {
+        type: 'SET_UPDATE_TRANSACTION_FORM_HIDDEN',
+        payload: {
+            status: status
+        }
+    }
+}
+
+// Delete transaction action
+export const setDeleteTransactionData = (deleteTransactionData: transaction) => {
+    return {
+        type: 'SET_DELETE_TRANSACTION_DATA',
+        payload: {
+            deleteTransactionData: deleteTransactionData
+        }
+    }
+}
+
+// Delete transaction form hidden action
+export const setDeleteTransactionFormHidden = (status: boolean) => {
+    return {
+        type: 'SET_DELETE_TRANSACTION_FORM_HIDDEN',
+        payload: {
+            status:status
         }
     }
 }

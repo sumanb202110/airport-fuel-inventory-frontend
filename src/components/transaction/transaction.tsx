@@ -1,7 +1,7 @@
 import axios from "axios";
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAircrafts, getAirports, getTransactions, setHomeTab, setSelectedTransaction, setToasts } from "../../actions";
+import { getAircrafts, getAirports, getTransactions, setDeleteTransactionData, setDeleteTransactionFormHidden, setHomeTab, setSelectedTransaction, setToasts, setUpdateTransactionData, setUpdateTransactionFormHidden } from "../../actions";
 // import { aircrafts } from "../aircraft/Aircraft";
 // import { airports } from "../airport/Airport";
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
@@ -23,10 +23,10 @@ export type transactions = {
 export type transaction = {
     transaction_id?: string,
     transaction_date_time?: string,
-    transaction_type: string,
-    airport_id: string,
-    aircraft_id: string,
-    quantity: number,
+    transaction_type?: string,
+    airport_id?: string,
+    aircraft_id?: string,
+    quantity?: number,
     transaction_id_parent?: string
 }
 // type filterFormData = {
@@ -47,23 +47,38 @@ const Transaction: FC = (): ReactElement => {
         quantity: 0
     })
 
-    const [updateTransactionFormHidden, setUpdateTransactionFormHidden] = useState<boolean>(true)
-    const [updateTransactionData, setUpdateTransactionData] = useState<transaction>({
-        transaction_id: "",
-        transaction_type: "IN",
-        airport_id: "",
-        aircraft_id: "",
-        quantity: 0
-    })
+    // const [updateTransactionFormHidden, setUpdateTransactionFormHidden] = useState<boolean>(true)
+    // const [updateTransactionData, setUpdateTransactionData] = useState<transaction>({
+    //     transaction_id: "",
+    //     transaction_type: "IN",
+    //     airport_id: "",
+    //     aircraft_id: "",
+    //     quantity: 0
+    // })
 
-    const [deleteTransactionFormHidden, setDeleteTransactionFormHidden] = useState<boolean>(true)
-    const [deleteTransactionData, setDeleteTransactionData] = useState<transaction>({
-        transaction_id: "",
-        transaction_type: "IN",
-        airport_id: "",
-        aircraft_id: "",
-        quantity: 0
-    })
+    // retrive update transaction data from redux
+    const updateTransactionData = useSelector((state: state) => { return state.updateTransaction?.updateTransactionData });
+
+    // retrive update transaction form hidden from redux
+    const updateTransactionFormHidden = useSelector((state: state) => { return state.updateTransaction?.updateTransactionFormHidden });
+
+   
+
+    // const [deleteTransactionFormHidden, setDeleteTransactionFormHidden] = useState<boolean>(true)
+    // const [deleteTransactionData, setDeleteTransactionData] = useState<transaction>({
+    //     transaction_id: "",
+    //     transaction_type: "IN",
+    //     airport_id: "",
+    //     aircraft_id: "",
+    //     quantity: 0
+    // })
+
+    // retrive delete transaction data from redux
+    const deleteTransactionData = useSelector((state: state) => { return state.deleteTransaction?.deleteTransactionData });
+
+    // retrive delete transaction form hidden from redux
+    const deleteTransactionFormHidden = useSelector((state: state) => { return state.deleteTransaction?.deleteTransactionFormHidden });
+
 
     const [fliterFormHidden, setFilterFormHidden] = useState<boolean>(false)
     const [filterFormData, setFilterFormData] = useState<any>({
@@ -131,24 +146,24 @@ const Transaction: FC = (): ReactElement => {
     const handleUpdateTransactionFormChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
 
-        setUpdateTransactionData({ ...updateTransactionData, [target.name]: target.value })
+        dispatch(setUpdateTransactionData({ ...updateTransactionData, [target.name]: target.value }))
     }
     const handleUpdateTransactionFormChangeSelect = (event: React.FormEvent<HTMLSelectElement>) => {
         let target = event.target as HTMLSelectElement
 
-        setUpdateTransactionData({ ...updateTransactionData, [target.name]: target.value })
+        dispatch(setUpdateTransactionData({ ...updateTransactionData, [target.name]: target.value }))
     }
 
     // Handle change for create transacion
     const handleDeleteTransactionFormChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
 
-        setDeleteTransactionData({ ...deleteTransactionData, [target.name]: target.value })
+        dispatch(setDeleteTransactionData({ ...deleteTransactionData, [target.name]: target.value }))
     }
     const handleDeleteTransactionFormChangeSelect = (event: React.FormEvent<HTMLSelectElement>) => {
         let target = event.target as HTMLSelectElement
 
-        setDeleteTransactionData({ ...deleteTransactionData, [target.name]: target.value })
+        dispatch(setDeleteTransactionData({ ...deleteTransactionData, [target.name]: target.value }))
     }
 
 
@@ -238,7 +253,7 @@ const Transaction: FC = (): ReactElement => {
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                setUpdateTransactionFormHidden(true)
+                dispatch(setUpdateTransactionFormHidden(true))
                 const targetForm = event.target as HTMLFormElement
                 targetForm.reset()
                 setUpdateTransactionData(
@@ -267,7 +282,7 @@ const Transaction: FC = (): ReactElement => {
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts("Transaction deleted successfully.", true, 'SUCCESS'))
-                setDeleteTransactionFormHidden(true)
+                dispatch(setDeleteTransactionFormHidden(true))
                 dispatch(getTransactions());
                 dispatch(getAirports());
             })
@@ -473,7 +488,7 @@ const Transaction: FC = (): ReactElement => {
                     <div className="modal-content">
                         <form onSubmit={handleUpdateTransactionFormSubmit}>
                             <div className="modal-header">
-                                <button type="button" onClick={() => { setUpdateTransactionFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <button type="button" onClick={() => { dispatch(setUpdateTransactionFormHidden(true)) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
 
                             </div>
                             <div className="modal-body">
@@ -483,14 +498,14 @@ const Transaction: FC = (): ReactElement => {
                                         <legend>Update Transaction</legend>
                                         <div className="mb-3">
                                             <label htmlFor="typeSelect" className="form-label">Type</label>
-                                            <select name="transaction_type" value={updateTransactionData.transaction_type} onChange={handleUpdateTransactionFormChangeSelect} id="typeSelect" className="form-select">
+                                            <select name="transaction_type" value={updateTransactionData?.transaction_type} onChange={handleUpdateTransactionFormChangeSelect} id="typeSelect" className="form-select">
                                                 <option value="IN" >IN</option>
                                                 <option value="OUT" >OUT</option>
                                             </select>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="airportSelect" className="form-label">Airport</label>
-                                            <select name="airport_id" value={updateTransactionData.airport_id.toString()} onChange={handleUpdateTransactionFormChangeSelect} id="airportSelect" className="form-select">
+                                            <select name="airport_id" value={updateTransactionData?.airport_id.toString()} onChange={handleUpdateTransactionFormChangeSelect} id="airportSelect" className="form-select">
                                                 <option value="">Select Airport Name</option>
                                                 {
                                                     airports?.map((airport) => {
@@ -501,10 +516,10 @@ const Transaction: FC = (): ReactElement => {
                                                 }
                                             </select>
                                         </div>
-                                        {updateTransactionData.transaction_type === "IN" ? null :
+                                        {updateTransactionData?.transaction_type === "IN" ? null :
                                             <div className="mb-3">
                                                 <label htmlFor="aircraftSelect" className="form-label">Aircraft</label>
-                                                <select name="aircraft_id" value={updateTransactionData.aircraft_id} onChange={handleUpdateTransactionFormChangeSelect} id="aircraftSelect" className="form-select">
+                                                <select name="aircraft_id" value={updateTransactionData?.aircraft_id} onChange={handleUpdateTransactionFormChangeSelect} id="aircraftSelect" className="form-select">
                                                     <option value="">Select Aircraft Name</option>
                                                     {
                                                         aircrafts?.map((aircraft) => {
@@ -520,11 +535,11 @@ const Transaction: FC = (): ReactElement => {
                                             <label className="form-check-label" htmlFor="quantityInput">
                                                 Quantity(L)
                                             </label>
-                                            <input value={updateTransactionData.quantity} onChange={handleUpdateTransactionFormChange} name="quantity" type="number" min={1}
+                                            <input value={updateTransactionData?.quantity} onChange={handleUpdateTransactionFormChange} name="quantity" type="number" min={1}
                                                 max={
-                                                    updateTransactionData.transaction_type === 'IN'
+                                                    updateTransactionData?.transaction_type === 'IN'
                                                         ? airports?.filter((airport) => airport.airport_id === updateTransactionData.airport_id).map(airport => Number(airport?.fuel_capacity) - Number(airport?.fuel_available))[0]
-                                                        : Number(airports?.filter((airport) => airport.airport_id === updateTransactionData.airport_id)[0]?.fuel_available)
+                                                        : Number(airports?.filter((airport) => airport.airport_id === updateTransactionData?.airport_id)[0]?.fuel_available)
                                                 }
                                                 id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
@@ -533,7 +548,7 @@ const Transaction: FC = (): ReactElement => {
 
                             </div>
                             <div className="modal-footer">
-                                <button type="button" onClick={() => { setUpdateTransactionFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="button" onClick={() => { dispatch(setUpdateTransactionFormHidden(true)) }} className="btn btn-default" data-dismiss="modal">Close</button>
                                 <button type="submit" className="btn btn-primary">Update</button>
 
                             </div>
@@ -548,7 +563,7 @@ const Transaction: FC = (): ReactElement => {
                     <div className="modal-content">
                         <form >
                             <div className="modal-header">
-                                <button type="button" onClick={() => { setDeleteTransactionFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <button type="button" onClick={() => { dispatch(setDeleteTransactionFormHidden(true)) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
 
                             </div>
                             <div className="modal-body">
@@ -558,14 +573,14 @@ const Transaction: FC = (): ReactElement => {
                                         <legend>Delete Transaction</legend>
                                         <div className="mb-3">
                                             <label htmlFor="typeSelect" className="form-label">Type</label>
-                                            <select disabled name="transaction_type" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData.transaction_type} id="typeSelect" className="form-select">
+                                            <select disabled name="transaction_type" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData?.transaction_type} id="typeSelect" className="form-select">
                                                 <option value="IN" >IN</option>
                                                 <option value="OUT" >OUT</option>
                                             </select>
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="airportSelect" className="form-label">Airport</label>
-                                            <select disabled name="airport_id" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData.airport_id.toString()} id="airportSelect" className="form-select">
+                                            <select disabled name="airport_id" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData?.airport_id.toString()} id="airportSelect" className="form-select">
                                                 <option value="">Select Airport Name</option>
                                                 {
                                                     airports?.map((airport) => {
@@ -576,10 +591,10 @@ const Transaction: FC = (): ReactElement => {
                                                 }
                                             </select>
                                         </div>
-                                        {deleteTransactionData.transaction_type === "IN" ? null :
+                                        {deleteTransactionData?.transaction_type === "IN" ? null :
                                             <div className="mb-3">
                                                 <label htmlFor="aircraftSelect" className="form-label">Aircraft</label>
-                                                <select disabled name="aircraft_id" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData.aircraft_id} id="aircraftSelect" className="form-select">
+                                                <select disabled name="aircraft_id" onChange={handleDeleteTransactionFormChangeSelect} value={deleteTransactionData?.aircraft_id} id="aircraftSelect" className="form-select">
                                                     <option value="">Select Aircraft Name</option>
                                                     {
                                                         aircrafts?.map((aircraft) => {
@@ -595,11 +610,11 @@ const Transaction: FC = (): ReactElement => {
                                             <label className="form-check-label" htmlFor="quantityInput">
                                                 Quantity(L)
                                             </label>
-                                            <input disabled value={deleteTransactionData.quantity} onChange={handleDeleteTransactionFormChange} name="quantity" type="number" min={1}
+                                            <input disabled value={deleteTransactionData?.quantity} onChange={handleDeleteTransactionFormChange} name="quantity" type="number" min={1}
                                                 max={
-                                                    deleteTransactionData.transaction_type === 'IN'
-                                                        ? airports?.filter((airport) => airport.airport_id === deleteTransactionData.airport_id).map(airport => Number(airport?.fuel_capacity) - Number(airport?.fuel_available))[0]
-                                                        : Number(airports?.filter((airport) => airport.airport_id === deleteTransactionData.airport_id)[0]?.fuel_available)
+                                                    deleteTransactionData?.transaction_type === 'IN'
+                                                        ? airports?.filter((airport) => airport.airport_id === deleteTransactionData?.airport_id).map(airport => Number(airport?.fuel_capacity) - Number(airport?.fuel_available))[0]
+                                                        : Number(airports?.filter((airport) => airport.airport_id === deleteTransactionData?.airport_id)[0]?.fuel_available)
                                                 }
                                                 id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
@@ -608,8 +623,8 @@ const Transaction: FC = (): ReactElement => {
 
                             </div>
                             <div className="modal-footer">
-                                <button type="button" onClick={() => { setDeleteTransactionFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" onClick={() => { handleDeleteTransaction(deleteTransactionData.transaction_id!) }} className="btn btn-primary">Delete</button>
+                                <button type="button" onClick={() => { dispatch(setDeleteTransactionFormHidden(true)) }} className="btn btn-default" data-dismiss="modal">Close</button>
+                                <button type="submit" onClick={() => { handleDeleteTransaction(deleteTransactionData?.transaction_id!) }} className="btn btn-primary">Delete</button>
 
                             </div>
                         </form>
@@ -752,7 +767,7 @@ const Transaction: FC = (): ReactElement => {
                                             borderRadius: "5px"
                                         }
                                     } onClick={() => {
-                                        setUpdateTransactionData(
+                                        dispatch(setUpdateTransactionData(
                                             {
                                                 transaction_id: transaction.transaction_id,
                                                 transaction_type: transaction.transaction_type,
@@ -760,8 +775,8 @@ const Transaction: FC = (): ReactElement => {
                                                 aircraft_id: transaction.aircraft_id,
                                                 quantity: transaction.quantity
                                             }
-                                        );
-                                        setUpdateTransactionFormHidden(false)
+                                        ));
+                                        dispatch(setUpdateTransactionFormHidden(false))
                                     }}>
                                         <EditBlack />
                                     </button>
@@ -775,7 +790,7 @@ const Transaction: FC = (): ReactElement => {
                                             }
                                         }
                                         onClick={() => {
-                                            setDeleteTransactionData(
+                                            dispatch(setDeleteTransactionData(
                                                 {
                                                     transaction_id: transaction.transaction_id,
                                                     transaction_type: transaction.transaction_type,
@@ -783,8 +798,8 @@ const Transaction: FC = (): ReactElement => {
                                                     aircraft_id: transaction.aircraft_id,
                                                     quantity: transaction.quantity
                                                 }
-                                            );
-                                            setDeleteTransactionFormHidden(false)
+                                            ));
+                                            dispatch(setDeleteTransactionFormHidden(false))
                                         }}>
                                         <DeleteBlack />
                                     </button>

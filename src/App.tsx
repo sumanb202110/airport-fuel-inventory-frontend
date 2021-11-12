@@ -28,6 +28,26 @@ export type state = {
     data: transactions
   },
   selectedTransaction: transaction,
+  updateTransaction?: {
+    updateTransactionFormHidden: false,
+    updateTransactionData: {
+        transaction_id: string,
+        transaction_type?: string,
+        airport_id: string,
+        aircraft_id: string,
+        quantity: number
+    }
+  },
+  deleteTransaction?: {
+    deleteTransactionFormHidden: false,
+    deleteTransactionData: {
+        transaction_id: string,
+        transaction_type?: string,
+        airport_id: string,
+        aircraft_id: string,
+        quantity: number
+    }
+  },
   airports?:{
     data: airports
   },

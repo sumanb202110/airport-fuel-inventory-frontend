@@ -7,6 +7,8 @@ import transactionsReducer from './transactions'
 import airportsReducer from './airports'
 import aircraftsReducer from './aircrafts'
 import selectedTransactionReducer from './setSelectedTransaction'
+import updateTransactionReducer from './setUpdateTransaction'
+import deleteTransactionReducer from './setDeleteTransaction'
 
 const allReducers = combineReducers({
     isLogin: logReducer,
@@ -16,7 +18,9 @@ const allReducers = combineReducers({
     transactions: transactionsReducer,
     airports: airportsReducer,
     aircrafts: aircraftsReducer,
-    selectedTransaction: selectedTransactionReducer
+    selectedTransaction: selectedTransactionReducer,
+    updateTransaction: updateTransactionReducer,
+    deleteTransaction: deleteTransactionReducer
 })
 
 export default allReducers

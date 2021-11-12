@@ -1,11 +1,17 @@
 import { FC, ReactElement } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setDeleteTransactionData, setDeleteTransactionFormHidden, setUpdateTransactionData, setUpdateTransactionFormHidden } from "../../actions";
 import { state } from "../../App";
+import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
+import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
 
 
 
 
 const TransactionSideBar: FC = (): ReactElement => {
+
+    const dispatch = useDispatch()
+
 
     // retrive selected transaction data from redux
     const selectedTransaction = useSelector((state: state) => { return state.selectedTransaction });
@@ -42,7 +48,39 @@ const TransactionSideBar: FC = (): ReactElement => {
                                 <p className="card-text">Aircraft Id: <strong>{selectedTransaction.aircraft_id !== "" ? selectedTransaction.aircraft_id : "----"}</strong></p>
                                 <p className="card-text">Parent Transaction Id: <strong>{selectedTransaction.transaction_id_parent !== undefined ? selectedTransaction.transaction_id_parent : "----"}</strong></p>
                                 <p>{selectedTransaction.transaction_id_parent !== undefined ? "This ia a reverted transaction" : ""}</p>
-
+                                <button 
+                                    className="btn btn-outline-warning"
+                                    onClick={() => {
+                                        dispatch(setUpdateTransactionData(
+                                            {
+                                                transaction_id: selectedTransaction.transaction_id,
+                                                transaction_type: selectedTransaction.transaction_type,
+                                                airport_id: selectedTransaction.airport_id,
+                                                aircraft_id: selectedTransaction.aircraft_id,
+                                                quantity: selectedTransaction.quantity
+                                            }
+                                        ));
+                                        dispatch(setUpdateTransactionFormHidden(false))
+                                    }}>
+                                        <EditBlack /> Edit
+                                    </button>
+                                    <span style={{ padding: "5px" }}></span>
+                                    <button
+                                        className="btn btn-outline-danger"
+                                        onClick={() => {
+                                            dispatch(setDeleteTransactionData(
+                                                {
+                                                    transaction_id: selectedTransaction.transaction_id,
+                                                    transaction_type: selectedTransaction.transaction_type,
+                                                    airport_id: selectedTransaction.airport_id,
+                                                    aircraft_id: selectedTransaction.aircraft_id,
+                                                    quantity: selectedTransaction.quantity
+                                                }
+                                            ));
+                                            dispatch(setDeleteTransactionFormHidden(false))
+                                        }}>
+                                        <DeleteBlack /> Delete
+                                    </button>
                             </div>
                         </div>
                     </div>
