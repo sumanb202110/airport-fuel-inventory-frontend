@@ -44,7 +44,7 @@ const Signup: FC = (): ReactElement => {
 
      // Check email on change
      useEffect(()=>{
-        if (!validateEmail(signupFormData.email)) {
+        if (!validateEmail(signupFormData.email) && signupFormData.email !== "") {
             dispatch(setToasts("Invalid email", true, 'ERROR'))
         }else{
             dispatch(setToasts("", false, 'SUCCESS'))

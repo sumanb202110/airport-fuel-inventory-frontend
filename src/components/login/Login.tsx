@@ -35,7 +35,7 @@ const Login: FC = (): ReactElement => {
 
     // Check email on change
     useEffect(()=>{
-        if (!validateEmail(loginFormData.email)) {
+        if (!validateEmail(loginFormData.email) && loginFormData.email !== "") {
             dispatch(setToasts("Invalid email", true, 'ERROR'))
         }else{
             dispatch(setToasts("", false, 'SUCCESS'))
