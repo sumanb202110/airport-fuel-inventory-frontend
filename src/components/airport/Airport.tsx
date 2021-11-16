@@ -86,6 +86,18 @@ const Airport: FC = (): ReactElement => {
     const handleCreateAirportFormSubmit = (event: React.FormEvent) => {
         console.log(createAirportData)
 
+        if(createAirportData.fuel_available > createAirportData.fuel_capacity ){
+            dispatch(setToasts("Fuel available can not be greater then fuel capacity", true, 'ERROR'))
+            return
+        }else if(createAirportData.fuel_available < 0){
+            dispatch(setToasts("Fuel available can not be less then 0", true, 'ERROR'))
+            return
+        }else if(createAirportData.fuel_capacity < 0){
+            dispatch(setToasts("Fuel capacity can not be less then 0", true, 'ERROR'))
+            return
+        }
+
+
         // api call for create transaction
         axios.post('http://localhost:4000/api/v1/airports', createAirportData, { withCredentials: true })
             .then(function (response: any) {
@@ -94,7 +106,7 @@ const Airport: FC = (): ReactElement => {
                 const targetForm = event.target as HTMLFormElement
                 targetForm.reset()
                 setCreateAirportFormHidden(true)
-                dispatch(getAirports);
+                dispatch(getAirports());
 
             })
             .catch(function (error) {
@@ -253,13 +265,13 @@ const Airport: FC = (): ReactElement => {
                                             <label className="form-check-label" htmlFor="fuel_capacity">
                                                 Fuel Capacity(L)
                                             </label>
-                                            <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_capacity)} name="fuel_capacity" type="number" min={1} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
+                                            <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_capacity)} name="fuel_capacity" type="number" min={0} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="fuel_available">
                                                 Fuel Available(L)
                                             </label>
-                                            <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_available)} name="fuel_available" type="number" min={1} id="fuel_available" className="form-control" placeholder="Fuel Available" />
+                                            <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_available)} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
                                     </fieldset>
                                 </div>

@@ -14,7 +14,13 @@ const TransactionSideBar: FC = (): ReactElement => {
 
 
     // retrive selected transaction data from redux
-    const selectedTransaction = useSelector((state: state) => { return state.selectedTransaction });
+    const selectedTransactionID = useSelector((state: state) => { return state.selectedTransaction.transaction_id });
+
+    // retrive selected transaction data from redux
+    const transactions = useSelector((state: state) => { return state.transactions!.data });
+
+    // Selected transcation details
+    const selectedTransaction = transactions?.filter((transaction)=> transaction.transaction_id === selectedTransactionID)[0]
 
     // retrive airports data from redux
     const airports = useSelector((state: state) => { return state.airports!.data });
@@ -22,7 +28,7 @@ const TransactionSideBar: FC = (): ReactElement => {
     return (
         <>
             {
-                selectedTransaction.transaction_id !== undefined ?
+                selectedTransaction?.transaction_id !== undefined ?
                     <div style={{ width: "10%", minWidth: "20%" , alignItems: "center" }} className="no-mobile">
                         <div className="card" style={{ width: "18rem", height: "25rem", position: "fixed" }}>
                             <div className="card-header bg-primary text-white" style={{ display: "flex" }}>
@@ -44,11 +50,11 @@ const TransactionSideBar: FC = (): ReactElement => {
                                     .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', day: 'numeric',month: 'long', hour: 'numeric', minute: 'numeric' })}
                                 </h6>
                                 <p className="card-text">Transaction Type: <strong>{selectedTransaction.transaction_type}</strong></p>
-                                <p className="card-text">Quantity: <strong>{selectedTransaction.quantity}</strong></p>
+                                <p className="card-text">Quantity: <strong>{selectedTransaction.quantity} L</strong></p>
                                 <p className="card-text">Aircraft Id: <strong>{selectedTransaction.aircraft_id !== "" ? selectedTransaction.aircraft_id : "----"}</strong></p>
                                 <p className="card-text">Parent Transaction Id: <strong>{selectedTransaction.transaction_id_parent !== undefined ? selectedTransaction.transaction_id_parent : "----"}</strong></p>
                                 <p>{selectedTransaction.transaction_id_parent !== undefined ? "This ia a reverted transaction" : ""}</p>
-                                <button 
+                                <button         
                                     className="btn btn-outline-warning"
                                     onClick={() => {
                                         dispatch(setUpdateTransactionData(

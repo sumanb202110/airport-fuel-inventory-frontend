@@ -217,6 +217,26 @@ const Transaction: FC = (): ReactElement => {
     // Submit create transaction form
     const handleCreateTransactionFormSubmit = (event: React.FormEvent) => {
         console.log(createTransactionData)
+        if(createTransactionData.quantity!>0)
+        {
+            if(createTransactionData.transaction_type === "IN"){
+                if( Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                 + Number(createTransactionData.quantity) > Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_capacity))
+                 {
+                    dispatch(setToasts("Can not add more then capacity", true, 'ERROR'))
+                    return
+                 }
+                 
+            }
+            else if(createTransactionData.transaction_type === "OUT"){
+                if( Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                 - Number(createTransactionData.quantity) < 0)
+                 {
+                    dispatch(setToasts("Can not take more then available", true, 'ERROR'))
+                    return
+                 }
+            }
+        }
 
         // api call for create transaction
         axios.post('http://localhost:4000/api/v1/transactions', createTransactionData, { withCredentials: true })
@@ -248,6 +268,26 @@ const Transaction: FC = (): ReactElement => {
     const handleUpdateTransactionFormSubmit = (event: React.FormEvent) => {
         console.log(updateTransactionData)
 
+        if(updateTransactionData!.quantity!>0)
+        {
+            if(updateTransactionData!.transaction_type === "IN"){
+                if( Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_available)
+                 + Number(updateTransactionData!.quantity) > Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_capacity))
+                 {
+                    dispatch(setToasts("Can not add more then capacity", true, 'ERROR'))
+                    return
+                 }
+                 
+            }
+            else if(updateTransactionData!.transaction_type === "OUT"){
+                if( Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_available)
+                 - Number(updateTransactionData!.quantity) < 0)
+                 {
+                    dispatch(setToasts("Can not take more then available", true, 'ERROR'))
+                    return
+                 }
+            }
+        }
         // api call for create transaction
         axios.patch('http://localhost:4000/api/v1/transactions', updateTransactionData, { withCredentials: true })
             .then(function (response: any) {
