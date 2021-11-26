@@ -19,6 +19,9 @@ const Toasts: FC = (): ReactElement => {
 
         setTimeout(() => {
             setDisplayToasts(false)
+            window.sessionStorage.setItem("TOASTS_MSG", "");
+            window.sessionStorage.setItem("TOASTS_DISPLAY", "FALSE");
+            window.sessionStorage.setItem("TOASTS_TYPE", "");
         }, 10000)
     }, [toastsMsg])
 

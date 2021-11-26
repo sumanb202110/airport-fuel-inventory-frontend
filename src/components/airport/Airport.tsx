@@ -4,21 +4,19 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getAirports, setHomeTab, setToasts } from "../../actions";
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
 import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
+import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 import { state } from "../../App";
+import { transactions } from "../transaction/transaction";
 
 
-export type airports = {
-    "airport_id": String,
-    "airport_name": String,
-    "fuel_capacity": Number,
-    "fuel_available": Number
-}[]
+export type airports = airport[]
 
 export type airport = {
     "airport_id": String,
     "airport_name": String,
     "fuel_capacity": Number,
-    "fuel_available": Number
+    "fuel_available": Number,
+    "transactions"?: transactions
 }
 
 const Airport: FC = (): ReactElement => {
@@ -30,6 +28,8 @@ const Airport: FC = (): ReactElement => {
         "fuel_capacity": 0,
         "fuel_available": 0
     })
+    const [createAirportError, setCreateAirportError] = useState("")
+
     const [updateAirportFormHidden, setUpdateAirportFormHidden] = useState<boolean>(true)
     const [updateAirportData, setUpdateAirportData] = useState<airport>({
         "airport_id": "",
@@ -37,6 +37,8 @@ const Airport: FC = (): ReactElement => {
         "fuel_capacity": 0,
         "fuel_available": 0
     })
+    const [updateAirportError, setUpdateAirportError] = useState("")
+
 
     const [deleteAirportFormHidden, setDeleteAirportFormHidden] = useState<boolean>(true)
     const [deleteAirportData, setDeleteAirportData] = useState<airport>({
@@ -86,33 +88,30 @@ const Airport: FC = (): ReactElement => {
     const handleCreateAirportFormSubmit = (event: React.FormEvent) => {
         console.log(createAirportData)
 
-        if(createAirportData.fuel_available > createAirportData.fuel_capacity ){
-            dispatch(setToasts("Fuel available can not be greater then fuel capacity", true, 'ERROR'))
-            return
-        }else if(createAirportData.fuel_available < 0){
-            dispatch(setToasts("Fuel available can not be less then 0", true, 'ERROR'))
-            return
-        }else if(createAirportData.fuel_capacity < 0){
-            dispatch(setToasts("Fuel capacity can not be less then 0", true, 'ERROR'))
-            return
+        if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
+            setCreateAirportError("Fuel available can not be greater then fuel capacity")
+        } else if (Number(createAirportData.fuel_available) < 0) {
+            setCreateAirportError("Fuel available can not be less then 0")
+        } else if (Number(createAirportData.fuel_capacity) < 0) {
+            setCreateAirportError("Fuel capacity can not be less then 0")
+        } else {
+            // api call for create transaction
+            axios.post('http://localhost:4000/api/v1/airports', createAirportData, { withCredentials: true })
+                .then(function (response: any) {
+                    console.log(response);
+                    dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                    const targetForm = event.target as HTMLFormElement
+                    targetForm.reset()
+                    setCreateAirportFormHidden(true)
+                    dispatch(getAirports());
+
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+                });
         }
 
-
-        // api call for create transaction
-        axios.post('http://localhost:4000/api/v1/airports', createAirportData, { withCredentials: true })
-            .then(function (response: any) {
-                console.log(response);
-                dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                const targetForm = event.target as HTMLFormElement
-                targetForm.reset()
-                setCreateAirportFormHidden(true)
-                dispatch(getAirports());
-
-            })
-            .catch(function (error) {
-                console.log(error);
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            });
         event.preventDefault();
     }
 
@@ -132,19 +131,27 @@ const Airport: FC = (): ReactElement => {
     // Submit form to create airport handle function
     const handleUpdateAirportFormSubmit = (event: React.FormEvent) => {
         console.log(updateAirportData)
-
-        // api call for create transaction
-        axios.patch('http://localhost:4000/api/v1/airports', updateAirportData, { withCredentials: true })
-            .then(function (response: any) {
-                console.log(response);
-                dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                setUpdateAirportFormHidden(true)
-                dispatch(getAirports());
-            })
-            .catch(function (error) {
-                console.log(error);
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            });
+        if (Number(updateAirportData.fuel_available) > Number(updateAirportData.fuel_capacity)) {
+            setUpdateAirportError("Fuel available can not be greater then fuel capacity")
+        } else if (Number(updateAirportData.fuel_available) < 0) {
+            setUpdateAirportError("Fuel available can not be less then 0")
+        } else if (Number(updateAirportData.fuel_capacity) < 0) {
+            setUpdateAirportError("Fuel capacity can not be less then 0")
+        } else {
+            setUpdateAirportError("")
+            // api call for create transaction
+            axios.patch(`http://localhost:4000/api/v1/airports/${updateAirportData.airport_id}`, updateAirportData, { withCredentials: true })
+                .then(function (response: any) {
+                    console.log(response);
+                    dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                    setUpdateAirportFormHidden(true)
+                    dispatch(getAirports());
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+                });
+        }
         event.preventDefault();
     }
 
@@ -164,12 +171,42 @@ const Airport: FC = (): ReactElement => {
             });
     }
 
+    // Handle refresh function
+    const handleRefresh = () => {
+        dispatch(getAirports());
+    }
+
+    // On update form data change
+    useEffect(()=>{
+        if (Number(updateAirportData.fuel_available) > Number(updateAirportData.fuel_capacity)) {
+            setUpdateAirportError("Fuel available can not be greater then fuel capacity")
+        } else if (Number(updateAirportData.fuel_available) < 0) {
+            setUpdateAirportError("Fuel available can not be less then 0")
+        } else if (Number(updateAirportData.fuel_capacity) < 0) {
+            setUpdateAirportError("Fuel capacity can not be less then 0")
+        } else {
+            setUpdateAirportError("")
+        }
+    },[updateAirportData])
+
+    // On create form data change
+    useEffect(()=>{
+        if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
+            setCreateAirportError("Fuel available can not be greater then fuel capacity")
+        } else if (Number(createAirportData.fuel_available) < 0) {
+            setCreateAirportError("Fuel available can not be less then 0")
+        } else if (Number(createAirportData.fuel_capacity) < 0) {
+            setCreateAirportError("Fuel capacity can not be less then 0")
+        } else {
+            setCreateAirportError("")
+        }
+    },[createAirportData])
 
 
     // Initial loading
     useEffect(() => {
         dispatch(setHomeTab('AIRPORT'))
-        dispatch(getAirports());
+        // dispatch(getAirports());
 
         // eslint-disable-next-line
     }, [])
@@ -219,6 +256,9 @@ const Airport: FC = (): ReactElement => {
                                             </label>
                                             <input onChange={handleCreateAirportFormChange} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
+                                        <span style={{color:"#e53935"}}>
+                                            {createAirportError}
+                                        </span>
                                     </fieldset>
                                 </div>
 
@@ -273,6 +313,9 @@ const Airport: FC = (): ReactElement => {
                                             </label>
                                             <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_available)} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
+                                        <span style={{color: "#e53935"}}>
+                                            {updateAirportError}
+                                        </span>
                                     </fieldset>
                                 </div>
 
@@ -350,6 +393,11 @@ const Airport: FC = (): ReactElement => {
                 <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
             </select>
             <br />
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button onClick={handleRefresh} className="btn btn-outline-info" >
+                    <RefreshBlack /> Refresh
+                </button>
+            </div>
             <div className="container">
                 <div className="row" style={{
                     alignItems: "center",
@@ -429,18 +477,18 @@ const Airport: FC = (): ReactElement => {
                                 alignItems: "center",
                                 backgroundColor: airportIndex % 2 !== 0 ? "#eeeeee" : ""
                             }}
-                            id={`row${airport.airport_id}`}
+                                id={`row${airport.airport_id}`}
 
-                            onMouseOver={
-                                ()=>{
-                                    const row = document.querySelector(`#row${airport.airport_id}`) as HTMLDivElement 
-                                    row.style.backgroundColor = "#76ff03"
-                            }} 
-                            onMouseOut={
-                                ()=>{
-                                    const row = document.querySelector(`#row${airport.airport_id}`) as HTMLDivElement 
-                                    row.style.backgroundColor = airportIndex % 2 !== 0 ? "#eeeeee" : ""
-                                }} 
+                                onMouseOver={
+                                    () => {
+                                        const row = document.querySelector(`#row${airport.airport_id}`) as HTMLDivElement
+                                        row.style.backgroundColor = "#76ff03"
+                                    }}
+                                onMouseOut={
+                                    () => {
+                                        const row = document.querySelector(`#row${airport.airport_id}`) as HTMLDivElement
+                                        row.style.backgroundColor = airportIndex % 2 !== 0 ? "#eeeeee" : ""
+                                    }}
                             >
                                 <div className="col-1">
                                     {airport.airport_id}
@@ -498,7 +546,7 @@ const Airport: FC = (): ReactElement => {
                                     </button>
                                 </div>
                             </div>
-                           
+
                         )
                     })
                 }

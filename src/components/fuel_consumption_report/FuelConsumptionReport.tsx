@@ -1,14 +1,35 @@
 import axios from "axios";
-import { FC, ReactElement, useEffect} from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAirports, getTransactions, setHomeTab, setToasts } from "../../actions";
+import { getAircrafts, getAirports, getTransactions, setHomeTab, setToasts } from "../../actions";
 import { state } from "../../App";
 // import { airports } from "../airport/Airport";
-import { transaction} from "../transaction/transaction";
+import { transaction } from "../transaction/transaction";
+import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
+import { ReactComponent as ExpandLessBlack } from '../../svgs/expand_less_black_24dp.svg'
+import { ReactComponent as ExpandMoreBlack } from '../../svgs/expand_more_black_24dp.svg'
+import { ReactComponent as ExpandLessWhite } from '../../svgs/expand_less_white_24dp.svg'
+import { ReactComponent as ExpandMoreWhite } from '../../svgs/expand_more_white_24dp.svg'
+
+
+
+type airportHideStatus = {
+    airport_id: string,
+    status: boolean
+}[]
+
+type sortType = 'DATE_ASC' | 'DATE_DESC' | 'QUANTITY_ASC' | 'QUANTITY_DESC'
+
+type sortBy = {
+    airport_id: string,
+    sort_type: sortType
+}[]
 
 const FuelConsumptionReport: FC = (): ReactElement => {
     // const [airports, setAirports] = useState<airports>()
     // const [transactions, setTransactions] = useState<transactions>()
+    const [airportHideStatus, setAirportHideStatus] = useState<airportHideStatus>()
+    const [sortBy, setSortBy] = useState<sortBy>()
     const dispatch = useDispatch()
 
     // retrive transactions data from redux
@@ -19,12 +40,48 @@ const FuelConsumptionReport: FC = (): ReactElement => {
 
 
     const handleAirportToggle = (id: string) => {
-        const airportDiv = document.querySelector(`#${id}`) as HTMLDivElement
-        if (airportDiv.style.display === "none") {
-            airportDiv.style.display = "block"
-        } else {
-            airportDiv.style.display = "none"
-        }
+        // const airportDiv = document.querySelector(`#${id}`) as HTMLDivElement
+        // if (airportDiv.style.display === "none") {
+        //     airportDiv.style.display = "block"
+        // } else {
+        //     airportDiv.style.display = "none"
+        // }
+
+        const tempAirportHideStatus = airportHideStatus?.map((data) => {
+            if (data.airport_id === id) {
+                return {
+                    airport_id: data.airport_id,
+                    status: !data.status
+                }
+            } else {
+                return {
+                    airport_id: data.airport_id,
+                    status: data.status
+                }
+            }
+
+        }) as airportHideStatus
+
+        setAirportHideStatus(tempAirportHideStatus)
+    }
+
+    const handleChangeSortBy = (airportId: string, sortType: sortType) => {
+        const tempSortBy = sortBy?.map((data) => {
+            if (data.airport_id === airportId) {
+                return {
+                    airport_id: data.airport_id,
+                    sort_type: sortType
+                }
+            } else {
+                return {
+                    airport_id: data.airport_id,
+                    sort_type: data.sort_type
+                }
+            }
+
+        }) as sortBy
+
+        setSortBy(tempSortBy)
     }
 
     // // Get airport details
@@ -58,7 +115,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                dispatch(getTransactions());
+                dispatch(getTransactions(100));
             })
             .catch(function (error) {
                 console.log(error);
@@ -66,22 +123,55 @@ const FuelConsumptionReport: FC = (): ReactElement => {
             });
     }
 
+    // Handle refresh function
+    const handleRefresh = () => {
+        dispatch(getAirports());
+        dispatch(getAircrafts());
+        dispatch(getTransactions(100));
+    }
+
+
 
 
     // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('FUEL_CONSUMPTION_REPORT'))
-        dispatch(getAirports())
-        dispatch(getTransactions())
+        // dispatch(getAirports())
+        // dispatch(getTransactions())
+
+        const tempAirportHideStatus = airports?.map((airport, index) => {
+            return {
+                airport_id: airport.airport_id,
+                status: index === 0 ? true : false
+            }
+        }) as airportHideStatus
+
+        setAirportHideStatus(tempAirportHideStatus)
+
+        const tempSortBy = airports?.map((data) => {
+            return {
+                airport_id: data.airport_id,
+                sort_type: 'DATE_ASC'
+            }
+
+        }) as sortBy
+
+        setSortBy(tempSortBy)
 
         // eslint-disable-next-line
-    }, [])
+    }, [airports])
+
     return (
         <div>
-            <br/>
-            <button onClick={()=> { window.print()}} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute"}}>Print</button>
-            <br/>
-            <br/>
+            <br />
+            <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute" }}>Print</button>
+            <br />
+            <br />
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
+                    <RefreshBlack /> Refresh
+                </button>
+            </div>
             {
                 airports?.sort(function (a, b) {
                     var nameA = a.airport_name.toUpperCase(); // ignore upper and lowercase
@@ -97,19 +187,37 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                     return 0;
                 }).map((airport, airportIndex) => {
                     return (
-                        <div key={airport.airport_id.toString()} className="container accordion" style={{backgroundColor: "#eeeeee"}}>
+                        <div key={airport.airport_id.toString()} className="container accordion" style={{ backgroundColor: "#eeeeee" }}>
                             <div className="accordion-item">
-                                <h2 className="accordion-header" id="headingOne" onClick={() => handleAirportToggle(`${airport.airport_id}DataContainer`)}>
-                                    <button className="btn btn-outline" type="button" style={{width: "100%"}}>
-                                    Airport: {airport.airport_name} 
+                                <h2 className="accordion-header" id="headingOne" onClick={() => handleAirportToggle(`${airport.airport_id}`)}>
+                                    <button className="btn btn-outline" type="button" style={{ width: "100%" }}>
+                                        Airport: {airport.airport_name}
                                     </button>
+                                    {
+                                        airportHideStatus?.filter((a) => a.airport_id === airport.airport_id)[0].status ?
+                                            <ExpandLessBlack />
+                                            :
+                                            <ExpandMoreBlack />
+                                    }
                                 </h2>
-                                <div id={`${airport.airport_id}DataContainer`} style={{ display: "none" }}>
-                                    <br/>
-                                    <div className="row justify-content-around" style={{backgroundColor: "#1a237e", color: "#ffffff"}}>
+                                <div id={`${airport.airport_id}DataContainer`} style={{ display: airportHideStatus?.filter((a) => a.airport_id === airport.airport_id)[0].status ? "block" : "none" }}>
+                                    <br />
+                                    <div className="row justify-content-around" style={{ backgroundColor: "#1a237e", color: "#ffffff" }}>
                                         <div className="col-2">
                                             <strong>
                                                 Date/time
+                                                {
+                                                    sortBy?.filter((data) => data.airport_id === airport.airport_id)[0].sort_type === 'DATE_DESC' ?
+                                                        <span onClick={() => { handleChangeSortBy(airport.airport_id.toString(), 'DATE_ASC') }}>
+                                                            <ExpandLessWhite />
+                                                        </span>
+                                                        :
+                                                        <span onClick={() => { handleChangeSortBy(airport.airport_id.toString(), 'DATE_DESC') }}>
+                                                            <ExpandMoreWhite />
+                                                        </span>
+                                                }
+
+
                                             </strong>
                                         </div>
                                         <div className="col-2">
@@ -120,6 +228,16 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                         <div className="col-2">
                                             <strong>
                                                 Fuel
+                                                {
+                                                    sortBy?.filter((data) => data.airport_id === airport.airport_id)[0].sort_type === 'QUANTITY_DESC' ?
+                                                        <span onClick={() => { handleChangeSortBy(airport.airport_id.toString(), 'QUANTITY_ASC') }}>
+                                                            <ExpandLessWhite />
+                                                        </span>
+                                                        :
+                                                        <span onClick={() => { handleChangeSortBy(airport.airport_id.toString(), 'QUANTITY_DESC') }}>
+                                                            <ExpandMoreWhite />
+                                                        </span>
+                                                }
                                             </strong>
                                         </div>
                                         <div className="col-2">
@@ -133,9 +251,53 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                         {/* <hr /> */}
                                     </div>
                                     {
-                                        transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.map((transaction, transactionIndex) => {
+                                        transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.sort(function (a, b) {
+                                            const currentSortBy = sortBy?.filter((data) => data.airport_id === airport.airport_id)[0]
+                                            if (currentSortBy?.sort_type === 'QUANTITY_ASC') {
+                                                return b.quantity - a.quantity
+                                            } else if (currentSortBy?.sort_type === 'QUANTITY_DESC') {
+                                                return a.quantity - b.quantity
+                                            } else if (currentSortBy?.sort_type === 'DATE_ASC') {
+                                                let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                if (dateA < dateB) {
+                                                    return -1;
+                                                }
+                                                if (dateA > dateB) {
+                                                    return 1;
+                                                }
+
+                                                // names must be equal
+                                                return 0;
+                                            } else if (currentSortBy?.sort_type === 'DATE_DESC') {
+                                                let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                if (dateA < dateB) {
+                                                    return 1;
+                                                }
+                                                if (dateA > dateB) {
+                                                    return -1;
+                                                }
+
+                                                // names must be equal
+                                                return 0;
+                                            }
+                                            else {
+                                                let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                                                if (dateA < dateB) {
+                                                    return 1;
+                                                }
+                                                if (dateA > dateB) {
+                                                    return -1;
+                                                }
+
+                                                // names must be equal
+                                                return 0;
+                                            }
+                                        }).map((transaction, transactionIndex) => {
                                             return (
-                                                <div className="row justify-content-around" key={transaction.transaction_id} style={{alignItems: "center", backgroundColor: `${transactionIndex %2 !== 0 ? "#eeeeee":""}`}}>
+                                                <div className="row justify-content-around" key={transaction.transaction_id} style={{ alignItems: "center", backgroundColor: `${transactionIndex % 2 !== 0 ? "#eeeeee" : ""}` }}>
                                                     <div className="col-2">
                                                         {new Date(transaction.transaction_date_time)
                                                             .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
@@ -147,7 +309,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                                         {transaction.quantity}
                                                     </div>
                                                     <div className="col-2">
-                                                        {transaction.aircraft_id === "" ? "---": transaction.aircraft_id}
+                                                        {transaction.aircraft_id === "" ? "---" : transaction.aircraft_id}
                                                     </div>
                                                     <div className="col-sm-2">
                                                         <button type="button" onClick={() => {
@@ -167,7 +329,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                             )
                                         })
                                     }
-                                    <h4>Fuel Available: {airport.fuel_available}</h4>
+                                    <p>Fuel Available: {airport.fuel_available}</p>
 
                                 </div>
                             </div>

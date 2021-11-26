@@ -1,6 +1,6 @@
 import './App.css';
 import Nav from './components/nav/Nav';
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   BrowserRouter as Router,
   Switch,
@@ -16,6 +16,7 @@ import Home from './components/home/Home';
 import Toasts from './components/toasts/Toasts';
 import Signup from './components/signup/Signup';
 import { useEffect, useState } from 'react';
+import { getAircrafts, getAirports, getTransactions } from './actions';
 
 
 export type state = {
@@ -48,6 +49,7 @@ export type state = {
         quantity: number
     }
   },
+  homeLineGraphData: any,
   airports?:{
     data: airports
   },
@@ -75,12 +77,32 @@ export type response = {
 function App() {
   const [isLoading, setIsLoading] = useState(true)
 
+  const dispatch = useDispatch()
+
+  const transactions = useSelector((state: state) => { return state.transactions?.data });
+  const aircrafts = useSelector((state: state) => { return state.aircrafts?.data });
+  const airports = useSelector((state: state) => { return state.airports?.data });
+  const isLogin = useSelector((state: state) => { return state.isLogin });
+  
+
+
+
   useEffect(() => {
     setIsLoading(false)
-    // eslint-disable-next-line
-  }, [])
+    if(airports?.length === 0 || airports === null){
+      dispatch(getAirports())
+    }
+    if(aircrafts?.length === 0 || aircrafts === null){
+      dispatch(getAircrafts())
+    }
+    if(transactions?.length === 0 || transactions === null){
+      dispatch(getTransactions(100))
+    }
 
-  const isLogin = useSelector((state: state) => { return state.isLogin });
+
+    // eslint-disable-next-line
+  }, [isLogin])
+
 
   return (
     <div className="App">

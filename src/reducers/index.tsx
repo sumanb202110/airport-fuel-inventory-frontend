@@ -9,6 +9,7 @@ import aircraftsReducer from './aircrafts'
 import selectedTransactionReducer from './setSelectedTransaction'
 import updateTransactionReducer from './setUpdateTransaction'
 import deleteTransactionReducer from './setDeleteTransaction'
+import homeLineGraphDataReducer from './homeLineGraph'
 
 const allReducers = combineReducers({
     isLogin: logReducer,
@@ -20,7 +21,8 @@ const allReducers = combineReducers({
     aircrafts: aircraftsReducer,
     selectedTransaction: selectedTransactionReducer,
     updateTransaction: updateTransactionReducer,
-    deleteTransaction: deleteTransactionReducer
+    deleteTransaction: deleteTransactionReducer,
+    homeLineGraphData: homeLineGraphDataReducer
 })
 
 export default allReducers

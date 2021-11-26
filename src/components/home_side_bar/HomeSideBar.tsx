@@ -1,17 +1,18 @@
 
 import { FC, ReactElement } from "react";
-import { airports } from "../airport/Airport";
-import { transactions } from "../transaction/transaction";
+import { useSelector } from "react-redux";
+import { state } from "../../App";
 
-type HomeSideBarProps = {
-    airports: airports,
-    transactions: transactions
-}
+// type HomeSideBarProps = {
+//     airports: airports,
+//     transactions: transactions
+// }
 
 
 
-const HomeSideBar: FC<HomeSideBarProps> = ({ airports, transactions }): ReactElement => {
-
+const HomeSideBar: FC= (): ReactElement => {
+// retrive airports data from redux
+    const airports = useSelector((state: state) => { return state.airports!.data });
 
     return (
         <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{
@@ -43,7 +44,8 @@ const HomeSideBar: FC<HomeSideBarProps> = ({ airports, transactions }): ReactEle
                                 <label><strong>{airport.airport_name}</strong></label>
 
                                 {
-                                    transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.slice(0,5).map((transaction) => {
+                                    airport.transactions?.length!>0?
+                                    airport.transactions?.map((transaction) => {
                                         return (
                                             <div className="shadow-sm rounded" key={transaction.transaction_id.toString()} style={{ backgroundColor: `${transaction.transaction_type === 'IN' ? '#76ff03' : '#ff8a80'}` }}>
                                                 <p><strong>{transaction.transaction_type === 'IN' ? '+' : '-'}</strong>
@@ -57,6 +59,10 @@ const HomeSideBar: FC<HomeSideBarProps> = ({ airports, transactions }): ReactEle
 
                                         )
                                     })
+                                    :
+                                    <p>
+                                        No transaction available
+                                    </p>
                                 }
                             </div>
                         </div>

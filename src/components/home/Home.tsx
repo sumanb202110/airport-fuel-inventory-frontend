@@ -1,12 +1,13 @@
-import { FC, ReactElement, useEffect} from "react";
+import { FC, ReactElement, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAirports, getTransactions, setHomeTab} from "../../actions";
+import { getAircrafts, getAirports, getTransactions, setHomeTab } from "../../actions";
 // import { airports } from "../airport/Airport";
 // import axios from "axios";
 // import { transactions } from "../transaction/transaction";
 import HomeSideBar from "../home_side_bar/HomeSideBar";
 import HomePieChart from "../home_pie_chart/HomePieChart";
 import HomeLineChart from "../home_line_chart/HomeLineChart";
+import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 import { state } from "../../App";
 
 
@@ -47,40 +48,54 @@ const Home: FC = (): ReactElement => {
     //         })
     // }
 
-
+    // Handle refresh function
+    const handleRefresh = () => {
+        dispatch(getAirports());
+        dispatch(getAircrafts());
+        dispatch(getTransactions(100));
+    }
 
 
 
     // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('HOME'))
-        dispatch(getAirports());
-        dispatch(getTransactions());
+        // dispatch(getAirports());
+        // dispatch(getTransactions());
 
         // eslint-disable-next-line
     }, [])
 
     return (
-        <div style={{
-            display: "flex",
-            flexDirection: "row",
-            flexWrap: "wrap"
-        }}>
-
-            <br />
-            <div style={{
-                width: "55vw"
-            }} >
-
-                <HomeLineChart transactions={transactions!} airports={airports!} />
-
-                <HomePieChart airports={airports!} />
-
+        <>
+        <br/>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button onClick={handleRefresh} className="btn btn-outline-info" >
+                    <RefreshBlack /> Refresh
+                </button>
             </div>
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "wrap"
+            }}>
 
-            <HomeSideBar transactions={transactions!} airports={airports!} />
 
-        </div >
+                <br />
+                <div style={{
+                    width: "55vw"
+                }} >
+
+                    <HomeLineChart transactions={transactions!} airports={airports!} />
+
+                    <HomePieChart airports={airports!} />
+
+                </div>
+
+                <HomeSideBar />
+
+            </div >
+        </>
     )
 }
 

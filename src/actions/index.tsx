@@ -9,7 +9,7 @@ export type action = {
      'TOASTS_MSG' | 'GET_TRANSACTIONS' | 'GET_AIRPORTS' |
       'GET_AIRCRAFTS' | 'SET_SELECTED_TRANSACTION' | 'SET_UPDATE_TRANSACTION_DATA'|
       'SET_UPDATE_TRANSACTION_FORM_HIDDEN' | 'SET_DELETE_TRANSACTION_DATA' | 
-      'SET_DELETE_TRANSACTION_FORM_HIDDEN'
+      'SET_DELETE_TRANSACTION_FORM_HIDDEN' |'SET_HOME_LINE_GRAPH_DATA'
       ,
     payload: {
         tabName: string,
@@ -19,6 +19,7 @@ export type action = {
         status: boolean,
         updateTransactionData: transaction,
         deleteTransactionData: transaction,
+        homeLineGraphData: Array<object>,
         type: 'SUCCESS' | 'ERROR'
 
     }
@@ -72,13 +73,15 @@ export const setToasts = (msg: string, display: boolean, type: string) => {
     }
 }
 
-export const getTransactions = () => async (dispatch: Dispatch<any>) => {
+export const getTransactions = (count: number, sortBy?: string, airportIds?: Array<string>,aircraftIds?: Array<string>,transactionTypes?: Array<string>) => async (dispatch: Dispatch<any>) => {
     try {
-        const response = await axios.get<transactions>(`http://localhost:4000/api/v1/transactions`, { withCredentials: true })
+        const response = await axios.get<any>(
+            `http://localhost:4000/api/v1/transactions?page=1&count=${count}&sort_by=${sortBy}${airportIds?.length!>0?`&airport_ids=${airportIds}`:``}${aircraftIds?.length!>0?`&aircraft_ids=${aircraftIds}`:``}${transactionTypes?.length!>0?`&transaction_types=${transactionTypes}`:``}`,
+             { withCredentials: true })
         dispatch(
             {
                 type: 'GET_TRANSACTIONS',
-                payload: response.data
+                payload: response.data.data as transactions
             }
         )
     } catch (error: any) {
@@ -141,11 +144,26 @@ export const setDeleteTransactionFormHidden = (status: boolean) => {
 
 export const getAirports = () => async (dispatch: Dispatch<any>) => {
     try {
-        const response = await axios.get<airports>(`http://localhost:4000/api/v1/airports`, { withCredentials: true })
+        const response = await axios.get<any>(`http://localhost:4000/api/v1/airports`, { withCredentials: true })
         dispatch(
             {
                 type: 'GET_AIRPORTS',
-                payload: response.data
+                payload: response.data.data as airports
+            }
+        )
+    } catch (error: any) {
+        console.log(error)
+        dispatch(setToasts(error?.response?.data.msg, true, 'ERROR'))
+    }
+};
+
+export const getAircrafts = () => async (dispatch: Dispatch<any>) => {
+    try {
+        const response = await axios.get<any>(`http://localhost:4000/api/v1/aircrafts`, { withCredentials: true })
+        dispatch(
+            {
+                type: 'GET_AIRCRAFTS',
+                payload: response.data.data as aircrafts
             }
         )
     } catch (error: any) {
@@ -154,17 +172,12 @@ export const getAirports = () => async (dispatch: Dispatch<any>) => {
     }
 };
 
-export const getAircrafts = () => async (dispatch: Dispatch<any>) => {
-    try {
-        const response = await axios.get<aircrafts>(`http://localhost:4000/api/v1/aircrafts`, { withCredentials: true })
-        dispatch(
-            {
-                type: 'GET_AIRCRAFTS',
-                payload: response.data
-            }
-        )
-    } catch (error: any) {
-        console.log(error)
-        dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+// Home page line graph data
+export const setHomeLineGraphData = (homeLineGraphData: Array<object>) => {
+    return {
+        type: 'SET_HOME_LINE_GRAPH_DATA',
+        payload: {
+            homeLineGraphData: homeLineGraphData
+        }
     }
-};
+}

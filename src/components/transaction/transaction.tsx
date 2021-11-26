@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FC, ReactElement, useEffect, useState } from "react";
+import { FC, ReactElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAircrafts, getAirports, getTransactions, setDeleteTransactionData, setDeleteTransactionFormHidden, setHomeTab, setSelectedTransaction, setToasts, setUpdateTransactionData, setUpdateTransactionFormHidden } from "../../actions";
 // import { aircrafts } from "../aircraft/Aircraft";
@@ -7,6 +7,8 @@ import { getAircrafts, getAirports, getTransactions, setDeleteTransactionData, s
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
 import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
 import { ReactComponent as FilterListBlack } from '../../svgs/filter_list_black_24dp.svg'
+import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
+
 import { state } from "../../App";
 import TransactionSideBar from "../transaction_side_bar/TransactionSideBar";
 
@@ -36,6 +38,12 @@ export type transaction = {
 // }
 
 const Transaction: FC = (): ReactElement => {
+    // Ref to detect initial renderer
+    const initialRender = useRef(true)
+
+    const filterAirportSearchInput = useRef<HTMLInputElement>(null)
+    const filterAircraftSearchInput = useRef<HTMLInputElement>(null)
+
     // const [transactions, setTransactions] = useState<transactions>()
     // const [aircrafts, setAircrafts] = useState<aircrafts>()
     // const [airports, setAirports] = useState<airports>()
@@ -46,6 +54,7 @@ const Transaction: FC = (): ReactElement => {
         aircraft_id: "",
         quantity: 0
     })
+    const [createTransactionError, setCreateTransactionError] = useState("")
 
     // const [updateTransactionFormHidden, setUpdateTransactionFormHidden] = useState<boolean>(true)
     // const [updateTransactionData, setUpdateTransactionData] = useState<transaction>({
@@ -61,8 +70,9 @@ const Transaction: FC = (): ReactElement => {
 
     // retrive update transaction form hidden from redux
     const updateTransactionFormHidden = useSelector((state: state) => { return state.updateTransaction?.updateTransactionFormHidden });
+    const [updateTransactionError, setUpdateTransactionError] = useState("")
 
-   
+
 
     // const [deleteTransactionFormHidden, setDeleteTransactionFormHidden] = useState<boolean>(true)
     // const [deleteTransactionData, setDeleteTransactionData] = useState<transaction>({
@@ -80,12 +90,15 @@ const Transaction: FC = (): ReactElement => {
     const deleteTransactionFormHidden = useSelector((state: state) => { return state.deleteTransaction?.deleteTransactionFormHidden });
 
 
+
     const [fliterFormHidden, setFilterFormHidden] = useState<boolean>(false)
     const [filterFormData, setFilterFormData] = useState<any>({
         filterAirportId: [],
         filterAircraftId: [],
         filterTransactionType: []
     })
+    const [filterSearchAirportName, setFilterSearchAirportName] = useState("")
+    const [filterSearchAircraftNo, setFilterSearchAircraftNo] = useState("")
 
 
     const [count, setCount] = useState(10)
@@ -112,17 +125,24 @@ const Transaction: FC = (): ReactElement => {
         // if(target.name === "filterTransactionType"){
         //     setFilterFormData({...filterFormData, filterTransactionType: target.value})
         // }else{
-        let tempData : any = [] 
-        document.querySelectorAll(`input[name=${target.name}]`).forEach((data:any)=>{
-            if(data.checked){
+        let tempData: any = []
+        document.querySelectorAll(`input[name=${target.name}]`).forEach((data: any) => {
+            if (data.checked) {
                 tempData.push(data.value)
             }
         })
-        setFilterFormData({ ...filterFormData, [target.name]: tempData})
+        setFilterFormData({ ...filterFormData, [target.name]: tempData })
         // }
     }
 
-    
+    const handleFilterAirportSearchChange = ()=>{
+        setFilterSearchAirportName(filterAirportSearchInput.current?.value!)
+    }
+
+    const handleFilterAircraftSearchChange = ()=>{
+        setFilterSearchAircraftNo(filterAircraftSearchInput.current?.value!)
+    }
+
     // Handle selected transaction
     const handleSelectedTransaction = (transaction: transaction) => {
         dispatch(setSelectedTransaction(transaction))
@@ -178,7 +198,7 @@ const Transaction: FC = (): ReactElement => {
 
     const handleLoadMore = () => {
         setCount(count + 10)
-        dispatch(getTransactions())
+        // dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100, sortBy))
     }
 
     // Fetch transaction function
@@ -217,50 +237,53 @@ const Transaction: FC = (): ReactElement => {
     // Submit create transaction form
     const handleCreateTransactionFormSubmit = (event: React.FormEvent) => {
         console.log(createTransactionData)
-        if(createTransactionData.quantity!>0)
-        {
-            if(createTransactionData.transaction_type === "IN"){
-                if( Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
-                 + Number(createTransactionData.quantity) > Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_capacity))
-                 {
-                    dispatch(setToasts("Can not add more then capacity", true, 'ERROR'))
-                    return
-                 }
-                 
-            }
-            else if(createTransactionData.transaction_type === "OUT"){
-                if( Number(airports.filter((airport)=>createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
-                 - Number(createTransactionData.quantity) < 0)
-                 {
-                    dispatch(setToasts("Can not take more then available", true, 'ERROR'))
-                    return
-                 }
-            }
+        if (createTransactionData.quantity! > 0) {
+            if (createTransactionData.transaction_type === "IN" && Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                    + Number(createTransactionData.quantity) > Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_capacity)) 
+                    {
+                    setCreateTransactionError("Can not add more then capacity")
+                    }
+            else if (createTransactionData.transaction_type === "OUT" && Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                    - Number(createTransactionData.quantity) < 0) 
+                    {
+                    setCreateTransactionError("Can not take more then available")
+                    }
+                else {
+                    // api call for create transaction
+                    axios.post('http://localhost:4000/api/v1/transactions', createTransactionData, { withCredentials: true })
+                        .then(function (response: any) {
+                            console.log(response);
+                            dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                            setCreateTransactionFormHidden(true)
+                            const targetForm = event.target as HTMLFormElement
+                            targetForm.reset()
+                            setCreateTransactionData(
+                                {
+                                    transaction_type: "IN",
+                                    airport_id: "",
+                                    aircraft_id: "",
+                                    quantity: 0
+                                }
+                            )
+                            dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
+                                sortBy,
+                                filterFormData.filterAirportId,
+                                filterFormData.filterAircraftId,
+                                filterFormData.filterTransactionType
+                                ));
+                            dispatch(getAirports());
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                            dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+                        });
+                }
+            
+        } else {
+            setCreateTransactionError("Quantity can not be less then zero")
         }
 
-        // api call for create transaction
-        axios.post('http://localhost:4000/api/v1/transactions', createTransactionData, { withCredentials: true })
-            .then(function (response: any) {
-                console.log(response);
-                dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                setCreateTransactionFormHidden(true)
-                const targetForm = event.target as HTMLFormElement
-                targetForm.reset()
-                setCreateTransactionData(
-                    {
-                        transaction_type: "IN",
-                        airport_id: "",
-                        aircraft_id: "",
-                        quantity: 0
-                    }
-                )
-                dispatch(getTransactions());
-                dispatch(getAirports());
-            })
-            .catch(function (error) {
-                console.log(error);
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            });
+
         event.preventDefault();
     }
 
@@ -268,49 +291,52 @@ const Transaction: FC = (): ReactElement => {
     const handleUpdateTransactionFormSubmit = (event: React.FormEvent) => {
         console.log(updateTransactionData)
 
-        if(updateTransactionData!.quantity!>0)
-        {
-            if(updateTransactionData!.transaction_type === "IN"){
-                if( Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_available)
-                 + Number(updateTransactionData!.quantity) > Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_capacity))
-                 {
-                    dispatch(setToasts("Can not add more then capacity", true, 'ERROR'))
-                    return
-                 }
-                 
-            }
-            else if(updateTransactionData!.transaction_type === "OUT"){
-                if( Number(airports.filter((airport)=>updateTransactionData!.airport_id === airport.airport_id)[0].fuel_available)
-                 - Number(updateTransactionData!.quantity) < 0)
-                 {
-                    dispatch(setToasts("Can not take more then available", true, 'ERROR'))
-                    return
-                 }
-            }
+        if (updateTransactionData?.quantity! > 0) {
+            if (updateTransactionData?.transaction_type === "IN" && Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+            + Number(updateTransactionData.quantity) > Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_capacity)) 
+                {
+                setUpdateTransactionError("Can not add more then capacity")
+                }
+
+            else if (updateTransactionData?.transaction_type === "OUT" && Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+            - Number(updateTransactionData.quantity) < 0) 
+                {
+                    setUpdateTransactionError("Can not take more then available")
+                }
+                else {
+                    // api call for create transaction
+                    axios.patch(`http://localhost:4000/api/v1/transactions/${updateTransactionData?.transaction_id}`, updateTransactionData, { withCredentials: true })
+                        .then(function (response: any) {
+                            console.log(response);
+                            dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                            dispatch(setUpdateTransactionFormHidden(true))
+                            const targetForm = event.target as HTMLFormElement
+                            targetForm.reset()
+                            setUpdateTransactionData(
+                                {
+                                    transaction_type: "IN",
+                                    airport_id: "",
+                                    aircraft_id: "",
+                                    quantity: 0
+                                }
+                            )
+                            dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
+                                sortBy,
+                                filterFormData.filterAirportId,
+                                filterFormData.filterAircraftId,
+                                filterFormData.filterTransactionType
+                                ));
+                            dispatch(getAirports());
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                            dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+                        });
+                }
+            
+        } else {
+            setUpdateTransactionError("Quantity can not be less then zero")
         }
-        // api call for create transaction
-        axios.patch('http://localhost:4000/api/v1/transactions', updateTransactionData, { withCredentials: true })
-            .then(function (response: any) {
-                console.log(response);
-                dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                dispatch(setUpdateTransactionFormHidden(true))
-                const targetForm = event.target as HTMLFormElement
-                targetForm.reset()
-                setUpdateTransactionData(
-                    {
-                        transaction_type: "IN",
-                        airport_id: "",
-                        aircraft_id: "",
-                        quantity: 0
-                    }
-                )
-                dispatch(getTransactions());
-                dispatch(getAirports());
-            })
-            .catch(function (error) {
-                console.log(error);
-                dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-            });
         event.preventDefault();
     }
 
@@ -323,7 +349,12 @@ const Transaction: FC = (): ReactElement => {
                 console.log(response);
                 dispatch(setToasts("Transaction deleted successfully.", true, 'SUCCESS'))
                 dispatch(setDeleteTransactionFormHidden(true))
-                dispatch(getTransactions());
+                dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
+                    sortBy,
+                    filterFormData.filterAirportId,
+                    filterFormData.filterAircraftId,
+                    filterFormData.filterTransactionType
+                    ));
                 dispatch(getAirports());
             })
             .catch(function (error) {
@@ -332,6 +363,63 @@ const Transaction: FC = (): ReactElement => {
             });
     }
 
+    // Handle refresh function
+    const handleRefresh = () => {
+        dispatch(getAirports());
+        dispatch(getAircrafts());
+        dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
+            sortBy,
+            filterFormData.filterAirportId,
+            filterFormData.filterAircraftId,
+            filterFormData.filterTransactionType
+             ));
+    }
+
+    // On create form data change
+    useEffect(()=>{
+        if (createTransactionData.quantity! > 0) {
+            if (createTransactionData.transaction_type === "IN" && Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                    + Number(createTransactionData.quantity) > Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_capacity)) 
+                    {
+                    setCreateTransactionError("Can not add more then capacity")
+                    }
+            else if (createTransactionData.transaction_type === "OUT" && Number(airports.filter((airport) => createTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+                    - Number(createTransactionData.quantity) < 0) 
+                    {
+                    setCreateTransactionError("Can not take more then available")
+                    }
+                else {
+                    setCreateTransactionError("")
+                }
+            }else{
+                setCreateTransactionError("Quantity can not be less then zero")
+            }
+        // eslint-disable-next-line
+    },[createTransactionData])
+
+    // On update form data change
+    useEffect(()=>{
+        if (updateTransactionData?.quantity! > 0) {
+            if (updateTransactionData?.transaction_type === "IN" && Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+            + Number(updateTransactionData.quantity) > Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_capacity)) 
+                {
+                setUpdateTransactionError("Can not add more then capacity")
+                }
+
+            else if (updateTransactionData?.transaction_type === "OUT" && Number(airports.filter((airport) => updateTransactionData.airport_id === airport.airport_id)[0].fuel_available)
+            - Number(updateTransactionData.quantity) < 0) 
+                {
+                    setUpdateTransactionError("Can not take more then available")
+                }
+                else {
+                    setCreateTransactionError("")
+                }
+        }else{
+            setCreateTransactionError("Quantity can not be less then zero")
+        }
+        // eslint-disable-next-line
+    },[updateTransactionData])
+
     useEffect(() => {
         if (createTransactionData.transaction_type === 'IN') {
             setCreateTransactionData({ ...createTransactionData, aircraft_id: "" })
@@ -339,45 +427,61 @@ const Transaction: FC = (): ReactElement => {
         // eslint-disable-next-line
     }, [createTransactionData.transaction_type])
 
+    // On sort and filter change
+    useEffect(()=>{
+        if(initialRender.current){
+            initialRender.current=false
+        }else{
+            dispatch(getTransactions(count > transactions?.length ? count + transactions?.length : 100,
+                sortBy,
+                filterFormData.filterAirportId,
+                filterFormData.filterAircraftId,
+                filterFormData.filterTransactionType
+                  ));
+        }
+        
+        // eslint-disable-next-line
+    },[filterFormData, sortBy, count])
+
+
     useEffect(() => {
         dispatch(setHomeTab('TRANSACTION'))
 
         // getTransactions();
-        dispatch(getTransactions())
+        // dispatch(getTransactions())
 
-        dispatch(getAircrafts());
+        // dispatch(getAircrafts());
 
-        dispatch(getAirports());
+        // dispatch(getAirports());
 
         // eslint-disable-next-line
     }, [])
 
 
 
-    useEffect(() => {
-        dispatch(getTransactions())
-        // eslint-disable-next-line
-    }, [count])
+  
     return (
         <div>
             <br />
             <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary no-print">Create new transaction</button>
             <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute" }}>Print</button>
             <br />
-            <br/>
+            <br />
             <button
-            className="no-mobie"
-            onClick={()=>{setFilterFormHidden(!fliterFormHidden)}}
-            style={{
-                border: "none"
-            }}
+                className="no-mobie"
+                onClick={() => { setFilterFormHidden(!fliterFormHidden) }}
+                style={{
+                    border: "none"
+                }}
             >
-                <FilterListBlack/>
+                <div className="no-print">
+                    <FilterListBlack />
+                </div>
             </button>
-            <div className="no-mobile"  style={{
+            <div className="no-mobile no-print" style={{
                 height: "10rem",
                 overflow: "hidden",
-                display: fliterFormHidden? "none":""
+                display: fliterFormHidden ? "none" : ""
             }}>
                 <form style={{
                     backgroundColor: "#eeeeee",
@@ -386,59 +490,68 @@ const Transaction: FC = (): ReactElement => {
                     justifyContent: "space-around",
                     height: "100%"
                 }} >
+                    <div style={{width: "30%"}}>
+                        <label><strong>Airport</strong></label>
+                        <div style={{width: "100%"}}>
+                        <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{border: "none", width: "100%"}} placeholder="Search airport"/>
+                        </div>
+                        <div style={{
+                            height: "100%",
+                            overflowY: "scroll"
+                        }}>
+                            {
+                                airports?.filter((airport)=>{
+                                    return airport.airport_name.toUpperCase().includes(filterSearchAirportName.toUpperCase())
+                                }).map((airport) => {
+                                    return (
+                                        <div className="form-check" key={airport.airport_id.toString()} style={{width: "100%"}}>
+                                            <input name="filterAirportId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
+                                            <label className="form-check-label" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
+                                                {airport.airport_name}
+                                            </label>
+                                        </div>
+
+                                    )
+                                })
+                            }
+                        </div>
+                    </div>
                     <div>
-                    <label><strong>Airport</strong></label>
+                        <label><strong>Aircraft</strong></label>
+                        <div style={{width: "100%"}}>
+                        <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{border: "none", width: "100%"}} placeholder="Search aircraft"/>
+                        </div>
+                        <div style={{
+                            height: "100%",
+                            overflowY: "scroll"
+                        }} >
+                            {
+                                aircrafts?.filter((aircraft)=>{
+                                    return aircraft.aircraft_no.toUpperCase().includes(filterSearchAircraftNo.toUpperCase())
+                                }).map((aircraft) => {
+                                    return (
+                                        <div className="form-check" key={aircraft.aircraft_id.toString()}>
+                                            <input name="filterAircraftId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
+                                            <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
+                                                {aircraft.aircraft_no}
+                                            </label>
+                                        </div>
 
-                    <div style={{
-                        height: "100%",
-                        overflowY: "scroll"
-                    }}>
-                        {
-                            airports?.map((airport) => {
-                                return (
-                                    <div className="form-check" key={airport.airport_id.toString()} >
-                                        <input name= "filterAirportId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
-                                        <label className="form-check-label" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
-                                            {airport.airport_name}
-                                        </label>
-                                    </div>
-
-                                )
-                            })
-                        }
-                    </div>
-                    </div>
-                    <div>
-                    <label><strong>Aircraft</strong></label>
-                    <div style={{
-                        height: "100%",
-                        overflowY: "scroll"
-                    }} >
-                        {
-                            aircrafts?.map((aircraft) => {
-                                return (
-                                    <div className="form-check" key={aircraft.aircraft_id.toString()}>
-                                        <input name= "filterAircraftId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
-                                        <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
-                                            {aircraft.aircraft_no}
-                                        </label>
-                                    </div>
-
-                                )
-                            })
-                        }
-                    </div>
+                                    )
+                                })
+                            }
+                        </div>
                     </div>
                     <div>
                         <label><strong>Transaction Type</strong></label>
                         <div className="form-check">
-                            <input name= "filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
+                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
                             <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
                                 IN
                             </label>
                         </div>
                         <div className="form-check">
-                            <input name= "filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
+                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
                             <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
                                 OUT
                             </label>
@@ -508,6 +621,9 @@ const Transaction: FC = (): ReactElement => {
                                                 }
                                                 id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
+                                        <span style={{ color: "#e53935" }}>
+                                            {createTransactionError}
+                                        </span>
                                     </fieldset>
                                 </div>
 
@@ -583,6 +699,9 @@ const Transaction: FC = (): ReactElement => {
                                                 }
                                                 id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
+                                        <span style={{color: "#e53935"}}>
+                                            {updateTransactionError}
+                                        </span>
                                     </fieldset>
                                 </div>
 
@@ -654,7 +773,7 @@ const Transaction: FC = (): ReactElement => {
                                                 max={
                                                     deleteTransactionData?.transaction_type === 'IN'
                                                         ? airports?.filter((airport) => airport.airport_id === deleteTransactionData?.airport_id).map(airport => Number(airport?.fuel_capacity) - Number(airport?.fuel_available))[0]
-                                                        : Number(airports?.filter((airport) => airport.airport_id === deleteTransactionData?.airport_id)[0]?.fuel_available)
+                                                        : Number(airports?.find((airport) => airport.airport_id === deleteTransactionData?.airport_id)?.fuel_available)
                                                 }
                                                 id="quantityInput" className="form-control" placeholder="Fuel Quantity" />
                                         </div>
@@ -681,156 +800,142 @@ const Transaction: FC = (): ReactElement => {
                 <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
             </select>
             <br />
-            <div style={{display: "flex"}}>
-            <div className="container" >
-                <div className="row justify-content-between" style={{
-                    backgroundColor: "#1a237e", color: "#ffffff",
-                    alignItems: "center"
-                }}>
-                    <div className="col-md-2">
-                        <strong>
-                            Transaction Date and Time
-                        </strong>
+            <div className="no-print" style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
+                    <RefreshBlack /> Refresh
+                </button>
+            </div>
+            <br />
+            <div style={{ display: "flex" }}>
+                <div className="container" >
+                    <div className="row justify-content-between" style={{
+                        backgroundColor: "#1a237e", color: "#ffffff",
+                        alignItems: "center"
+                    }}>
+                        <div className="col-md-2">
+                            <strong>
+                                Transaction Date and Time
+                            </strong>
+                        </div>
+                        <div className="col-md-1">
+                            <strong>
+                                Transaction type
+                            </strong>
+                        </div>
+                        <div className="col-2">
+                            <strong>
+                                Quantity (L)
+                            </strong>
+                        </div>
+                        <div className="col-1">
+                            <strong>
+                                Airport Id
+                            </strong>
+                        </div>
+                        <div className="col-2">
+                            <strong>
+                                Aircraft Id
+                            </strong>
+                        </div>
+                        <div className="col-2">
+                            <strong>
+                                Transaction Id of parent
+                            </strong>
+                        </div>
+                        <div className="col-2 no-print">
+                        </div>
                     </div>
-                    <div className="col-md-1">
-                        <strong>
-                            Transaction type
-                        </strong>
-                    </div>
-                    <div className="col-2">
-                        <strong>
-                            Quantity (L)
-                        </strong>
-                    </div>
-                    <div className="col-1">
-                        <strong>
-                            Airport Id
-                        </strong>
-                    </div>
-                    <div className="col-2">
-                        <strong>
-                            Aircraft Id
-                        </strong>
-                    </div>
-                    <div className="col-2">
-                        <strong>
-                            Transaction Id of parent
-                        </strong>
-                    </div>
-                    <div className="col-2">
-                    </div>
-                </div>
-                {
-                    transactions?.filter((transaction)=>{
-                        return (
-                        (filterFormData.filterAirportId.indexOf(transaction.airport_id) >= 0 || filterFormData.filterAirportId.length ===0)
-                        &&
-                        (filterFormData.filterAircraftId.indexOf(transaction.aircraft_id) >= 0 || filterFormData.filterAircraftId.length ===0)
-                        &&
-                        (filterFormData.filterTransactionType.indexOf(transaction.transaction_type) >= 0 || filterFormData.filterTransactionType.length ===0)
-                        )
+                    {
+                        transactions
+                        // ?.filter((transaction) => {
+                        //     return (
+                        //         (filterFormData.filterAirportId.indexOf(transaction.airport_id) >= 0 || filterFormData.filterAirportId.length === 0)
+                        //         &&
+                        //         (filterFormData.filterAircraftId.indexOf(transaction.aircraft_id) >= 0 || filterFormData.filterAircraftId.length === 0)
+                        //         &&
+                        //         (filterFormData.filterTransactionType.indexOf(transaction.transaction_type) >= 0 || filterFormData.filterTransactionType.length === 0)
+                        //     )
 
-                    })?.sort(function (a, b) {
+                        // })
+                        // ?.sort(function (a, b) {
 
-                        if (sortBy === "QUANTITY_HIGH_LOW") {
-                            return b.quantity - a.quantity
-                        } else if (sortBy === "QUANTITY_LOW_HIGH") {
-                            return a.quantity - b.quantity
-                        } else if (sortBy === "DATE_LOW_HIGH") {
-                            let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            if (dateA < dateB) {
-                                return -1;
-                            }
-                            if (dateA > dateB) {
-                                return 1;
-                            }
+                        //     if (sortBy === "QUANTITY_HIGH_LOW") {
+                        //         return b.quantity - a.quantity
+                        //     } else if (sortBy === "QUANTITY_LOW_HIGH") {
+                        //         return a.quantity - b.quantity
+                        //     } else if (sortBy === "DATE_LOW_HIGH") {
+                        //         let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                        //         let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                        //         if (dateA < dateB) {
+                        //             return -1;
+                        //         }
+                        //         if (dateA > dateB) {
+                        //             return 1;
+                        //         }
 
-                            // names must be equal
-                            return 0;
-                        }
-                        else {
-                            let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            if (dateA < dateB) {
-                                return 1;
-                            }
-                            if (dateA > dateB) {
-                                return -1;
-                            }
+                        //         // names must be equal
+                        //         return 0;
+                        //     }
+                        //     else {
+                        //         let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                        //         let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
+                        //         if (dateA < dateB) {
+                        //             return 1;
+                        //         }
+                        //         if (dateA > dateB) {
+                        //             return -1;
+                        //         }
 
-                            // names must be equal
-                            return 0;
-                        }
-                    }).slice(0, count).map((transaction, transactionIndex) => {
-                        return (
-                            <div className="row justify-content-between" key={transaction.transaction_id} onClick={()=>{handleSelectedTransaction(transaction)}} id={`row${transaction.transaction_id}`} style={{
-                                backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "",
-                                alignItems: "center",
-                                paddingRight: "20px",
-                                border: `${selectedTransaction.transaction_id === transaction.transaction_id? 'solid' : 'none'}`
-                            }}
-                                onMouseOver={
-                                    () => {
-                                        const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
-                                        row.style.backgroundColor = "#76ff03"
-                                    }}
-                                onMouseOut={
-                                    () => {
-                                        const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
-                                        row.style.backgroundColor = transactionIndex % 2 !== 0 ? "#eeeeee" : ""
-                                    }}>
-                                <div className="col-sm-2">
-                                    {new Date(transaction.transaction_date_time)
-                                        .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                                </div>
-                                <div className="col-sm-1">
-                                    {transaction.transaction_type}
-                                </div>
-                                <div className="col-2">
-                                    {transaction.quantity}
-                                </div>
-                                <div className="col-1">
-                                    {transaction.airport_id}
-                                </div>
-                                <div className="col-2">
-                                    {transaction.aircraft_id === "" ? "---" : transaction.aircraft_id}
-                                </div>
-                                <div className="col-2">
-                                    {transaction.transaction_id_parent === undefined ? "---" : transaction.transaction_id_parent}
-                                </div>
-                                <div className="col-2">
-                                    <button style={
-                                        {
-                                            backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
-                                            border: "none",
-                                            borderRadius: "5px"
-                                        }
-                                    } onClick={() => {
-                                        dispatch(setUpdateTransactionData(
-                                            {
-                                                transaction_id: transaction.transaction_id,
-                                                transaction_type: transaction.transaction_type,
-                                                airport_id: transaction.airport_id,
-                                                aircraft_id: transaction.aircraft_id,
-                                                quantity: transaction.quantity
-                                            }
-                                        ));
-                                        dispatch(setUpdateTransactionFormHidden(false))
-                                    }}>
-                                        <EditBlack />
-                                    </button>
-                                    <span style={{ padding: "5px" }}></span>
-                                    <button
-                                        style={
+                        //         // names must be equal
+                        //         return 0;
+                        //     }
+                        // })
+                        ?.slice(0, count).map((transaction, transactionIndex) => {
+                            return (
+                                <div className="row justify-content-between" key={transaction.transaction_id} onClick={() => { handleSelectedTransaction(transaction) }} id={`row${transaction.transaction_id}`} style={{
+                                    backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "",
+                                    alignItems: "center",
+                                    paddingRight: "20px",
+                                    border: `${selectedTransaction.transaction_id === transaction.transaction_id ? 'solid' : 'none'}`
+                                }}
+                                    onMouseOver={
+                                        () => {
+                                            const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
+                                            row.style.backgroundColor = "#76ff03"
+                                        }}
+                                    onMouseOut={
+                                        () => {
+                                            const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
+                                            row.style.backgroundColor = transactionIndex % 2 !== 0 ? "#eeeeee" : ""
+                                        }}>
+                                    <div className="col-sm-2">
+                                        {new Date(transaction.transaction_date_time)
+                                            .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                                    </div>
+                                    <div className="col-sm-1">
+                                        {transaction.transaction_type}
+                                    </div>
+                                    <div className="col-2">
+                                        {transaction.quantity}
+                                    </div>
+                                    <div className="col-1">
+                                        {transaction.airport_id}
+                                    </div>
+                                    <div className="col-2">
+                                        {transaction.aircraft_id === "" ? "---" : transaction.aircraft_id}
+                                    </div>
+                                    <div className="col-2">
+                                        {transaction.transaction_id_parent === undefined ? "---" : transaction.transaction_id_parent}
+                                    </div>
+                                    <div className="col-2 no-print">
+                                        <button style={
                                             {
                                                 backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
                                                 border: "none",
                                                 borderRadius: "5px"
                                             }
-                                        }
-                                        onClick={() => {
-                                            dispatch(setDeleteTransactionData(
+                                        } onClick={() => {
+                                            dispatch(setUpdateTransactionData(
                                                 {
                                                     transaction_id: transaction.transaction_id,
                                                     transaction_type: transaction.transaction_type,
@@ -839,28 +944,51 @@ const Transaction: FC = (): ReactElement => {
                                                     quantity: transaction.quantity
                                                 }
                                             ));
-                                            dispatch(setDeleteTransactionFormHidden(false))
+                                            dispatch(setUpdateTransactionFormHidden(false))
                                         }}>
-                                        <DeleteBlack />
-                                    </button>
+                                            <EditBlack />
+                                        </button>
+                                        <span style={{ padding: "5px" }}></span>
+                                        <button
+                                            style={
+                                                {
+                                                    backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
+                                                    border: "none",
+                                                    borderRadius: "5px"
+                                                }
+                                            }
+                                            onClick={() => {
+                                                dispatch(setDeleteTransactionData(
+                                                    {
+                                                        transaction_id: transaction.transaction_id,
+                                                        transaction_type: transaction.transaction_type,
+                                                        airport_id: transaction.airport_id,
+                                                        aircraft_id: transaction.aircraft_id,
+                                                        quantity: transaction.quantity
+                                                    }
+                                                ));
+                                                dispatch(setDeleteTransactionFormHidden(false))
+                                            }}>
+                                            <DeleteBlack />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )
-                    })
-                }
-            
-            {
-                transactions?.length! > count ?
-                    <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
-                    :
-                    null
+                            )
+                        })
+                    }
 
-            }
-            
+                    {
+                        transactions?.length! > count ?
+                            <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
+                            :
+                            null
+
+                    }
+
+                </div>
+                <TransactionSideBar />
             </div>
-            <TransactionSideBar/>
-            </div>
-           
+
             <br />
             <br />
         </div>
