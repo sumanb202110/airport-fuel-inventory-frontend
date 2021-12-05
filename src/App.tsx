@@ -1,4 +1,5 @@
 import './App.css';
+import React, { useEffect, useState } from 'react';
 import Nav from './components/nav/Nav';
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -15,8 +16,7 @@ import Logout from './components/logout/Logout';
 import Home from './components/home/Home';
 import Toasts from './components/toasts/Toasts';
 import Signup from './components/signup/Signup';
-import { useEffect, useState } from 'react';
-import { getAircrafts, getAirports, getTransactions } from './actions';
+import { getAircrafts, getAirports, getTransactions} from './actions';
 
 
 export type state = {
@@ -76,6 +76,7 @@ export type response = {
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
+  
 
   const dispatch = useDispatch()
 
@@ -89,19 +90,33 @@ function App() {
 
   useEffect(() => {
     setIsLoading(false)
-    if(airports?.length === 0 || airports === null){
-      dispatch(getAirports())
+    if(isLogin === true){
+      if(airports?.length === 0 || airports === null){
+        dispatch(getAirports())
+      }
+      if(aircrafts?.length === 0 || aircrafts === null){
+        dispatch(getAircrafts())
+      }
+      if(transactions?.length === 0 || transactions === null){
+        dispatch(getTransactions(100))
+      }
     }
-    if(aircrafts?.length === 0 || aircrafts === null){
-      dispatch(getAircrafts())
-    }
-    if(transactions?.length === 0 || transactions === null){
-      dispatch(getTransactions(100))
-    }
+    
 
 
     // eslint-disable-next-line
   }, [isLogin])
+
+
+  useEffect(() => {
+      // if(window.localStorage.getItem("token")=== ""){
+      //   window.location.assign("/")
+      // }
+  // eslint-disable-next-line
+  }, [isLogin]);
+    
+    
+
 
 
   return (

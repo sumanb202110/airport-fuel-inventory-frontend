@@ -25,6 +25,7 @@ export type action = {
     }
 }
 
+
 // Login action
 export const login = () => {
     return {
@@ -75,9 +76,14 @@ export const setToasts = (msg: string, display: boolean, type: string) => {
 
 export const getTransactions = (count: number, sortBy?: string, airportIds?: Array<string>,aircraftIds?: Array<string>,transactionTypes?: Array<string>) => async (dispatch: Dispatch<any>) => {
     try {
-        const response = await axios.get<any>(
-            `http://localhost:4000/api/v1/transactions?page=1&count=${count}&sort_by=${sortBy}${airportIds?.length!>0?`&airport_ids=${airportIds}`:``}${aircraftIds?.length!>0?`&aircraft_ids=${aircraftIds}`:``}${transactionTypes?.length!>0?`&transaction_types=${transactionTypes}`:``}`,
-             { withCredentials: true })
+        // Axios auth config
+        const authAxios = axios.create({
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            }
+        })
+        const response = await authAxios.get<any>(
+            `http://localhost:4000/api/v1/transactions?page=1&count=${count}&sort_by=${sortBy}${airportIds?.length!>0?`&airport_ids=${airportIds}`:``}${aircraftIds?.length!>0?`&aircraft_ids=${aircraftIds}`:``}${transactionTypes?.length!>0?`&transaction_types=${transactionTypes}`:``}`)
         dispatch(
             {
                 type: 'GET_TRANSACTIONS',
@@ -144,7 +150,13 @@ export const setDeleteTransactionFormHidden = (status: boolean) => {
 
 export const getAirports = () => async (dispatch: Dispatch<any>) => {
     try {
-        const response = await axios.get<any>(`http://localhost:4000/api/v1/airports`, { withCredentials: true })
+        // Axios auth config
+        const authAxios = axios.create({
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            }
+        })
+        const response = await authAxios.get<any>(`http://localhost:4000/api/v1/airports`)
         dispatch(
             {
                 type: 'GET_AIRPORTS',
@@ -159,7 +171,13 @@ export const getAirports = () => async (dispatch: Dispatch<any>) => {
 
 export const getAircrafts = () => async (dispatch: Dispatch<any>) => {
     try {
-        const response = await axios.get<any>(`http://localhost:4000/api/v1/aircrafts`, { withCredentials: true })
+        // Axios auth config
+        const authAxios = axios.create({
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            }
+        })
+        const response = await authAxios.get<any>(`http://localhost:4000/api/v1/aircrafts`)
         dispatch(
             {
                 type: 'GET_AIRCRAFTS',
@@ -181,3 +199,6 @@ export const setHomeLineGraphData = (homeLineGraphData: Array<object>) => {
         }
     }
 }
+
+
+

@@ -1,5 +1,5 @@
 import React, { FC, ReactElement, useEffect, useState } from "react";
-import axios from 'axios'
+// import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAirports, setHomeTab, setToasts } from "../../actions";
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
@@ -7,6 +7,7 @@ import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 import { state } from "../../App";
 import { transactions } from "../transaction/transaction";
+import axios from "axios";
 
 
 export type airports = airport[]
@@ -49,6 +50,13 @@ const Airport: FC = (): ReactElement => {
     })
 
     const [sortBy, setSortBy] = useState("NAME_A_Z")
+
+    // Axios auth config
+    const authAxios = axios.create({
+        headers: {
+            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        }
+    })
 
     const dispatch = useDispatch()
 
@@ -96,7 +104,7 @@ const Airport: FC = (): ReactElement => {
             setCreateAirportError("Fuel capacity can not be less then 0")
         } else {
             // api call for create transaction
-            axios.post('http://localhost:4000/api/v1/airports', createAirportData, { withCredentials: true })
+            authAxios.post('http://localhost:4000/api/v1/airports', createAirportData, {})
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
@@ -140,7 +148,7 @@ const Airport: FC = (): ReactElement => {
         } else {
             setUpdateAirportError("")
             // api call for create transaction
-            axios.patch(`http://localhost:4000/api/v1/airports/${updateAirportData.airport_id}`, updateAirportData, { withCredentials: true })
+            authAxios.patch(`http://localhost:4000/api/v1/airports/${updateAirportData.airport_id}`, updateAirportData, { })
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
@@ -158,7 +166,7 @@ const Airport: FC = (): ReactElement => {
     // Handle delete airport
     const handleDeleteAirport = (airport_id: string) => {
         // api call for create transaction
-        axios.delete(`http://localhost:4000/api/v1/airports/${airport_id}`, { withCredentials: true })
+        authAxios.delete(`http://localhost:4000/api/v1/airports/${airport_id}`, {})
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts("Deleted successfully", true, 'SUCCESS'))
@@ -392,8 +400,7 @@ const Airport: FC = (): ReactElement => {
                 <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>
                 <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
             </select>
-            <br />
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
                 <button onClick={handleRefresh} className="btn btn-outline-info" >
                     <RefreshBlack /> Refresh
                 </button>
@@ -404,27 +411,27 @@ const Airport: FC = (): ReactElement => {
                     backgroundColor: "#1a237e",
                     color: "#ffffff"
                 }}>
-                    <div className="col-1">
+                    <div className="col-lg-1 d-none d-lg-block">
                         <strong>
                             Airport Id
                         </strong>
                     </div>
-                    <div className="col-3">
+                    <div className="col-lg-3 align-self-center d-none d-lg-block">
                         <strong>
                             Airport Name
                         </strong>
                     </div>
-                    <div className="col-3">
+                    <div className="col-4 col-lg-3 align-self-center">
                         <strong>
                             Fuel Capacity (L)
                         </strong>
                     </div>
-                    <div className="col-3">
+                    <div className="col-4 col-4 col-lg-3 align-self-center">
                         <strong>
                             Fuel Available (L)
                         </strong>
                     </div>
-                    <div className="col-2">
+                    <div className="col-4 col-lg-2">
                     </div>
                 </div>
                 {
@@ -490,19 +497,19 @@ const Airport: FC = (): ReactElement => {
                                         row.style.backgroundColor = airportIndex % 2 !== 0 ? "#eeeeee" : ""
                                     }}
                             >
-                                <div className="col-1">
+                                <div className="col-lg-1">
                                     {airport.airport_id}
                                 </div>
-                                <div className="col-3 ">
+                                <div className="col-lg-3 align-self-center">
                                     {airport.airport_name}
                                 </div>
-                                <div className="col-3">
+                                <div className="col-4 col-lg-3 align-self-center">
                                     {airport.fuel_capacity}
                                 </div>
-                                <div className="col-3">
+                                <div className="col-4 col-lg-3 align-self-center">
                                     {airport.fuel_available}
                                 </div>
-                                <div className="col-2">
+                                <div className="col-4 col-lg-2">
                                     <button style={
                                         {
                                             backgroundColor: airportIndex % 2 !== 0 ? "#eeeeee" : "white",

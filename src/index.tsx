@@ -3,15 +3,23 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { applyMiddleware, compose, createStore } from 'redux'
+import { applyMiddleware, compose, createStore} from 'redux'
 import allReducers from './reducers'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk';
+import { createStateSyncMiddleware, initMessageListener } from 'redux-state-sync';
+import { tokenCheck } from './tokenCheck';
+
+const config = {
+    // TOGGLE_TODO will not be triggered in other tabs
+    blacklist: ['TOGGLE_TODO'],
+};
 
 const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const middlewares = [thunk, createStateSyncMiddleware(config), tokenCheck()];
+const store = createStore(allReducers, composeEnhancers(applyMiddleware(...middlewares)))
 
-const store = createStore(allReducers, composeEnhancers(applyMiddleware(thunk)))
-
+initMessageListener(store);
 // const store = createStore(
 //   allReducers,
 //   {},

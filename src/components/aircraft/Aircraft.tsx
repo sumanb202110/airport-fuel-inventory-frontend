@@ -1,11 +1,12 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux'
 import { getAircrafts, setHomeTab, setToasts } from "../../actions";
-import axios from 'axios'
+// import axios from 'axios'
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
 import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 import { state } from "../../App";
+import axios from "axios";
 
 export type aircrafts = {
     aircraft_id: string,
@@ -47,6 +48,13 @@ const Aircraft: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
+    // Axios auth config
+    const authAxios = axios.create({
+        headers: {
+            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        }
+    })
+
     // retrive aircrafts data from redux
     const aircrafts = useSelector((state: state) => { return state.aircrafts!.data });
 
@@ -78,7 +86,7 @@ const Aircraft: FC = (): ReactElement => {
             setCreateAircraftError("Airline can not be blank")
         } else {
             // api call for create transaction
-            axios.post('http://localhost:4000/api/v1/aircrafts', createAircraftData, { withCredentials: true })
+            authAxios.post('http://localhost:4000/api/v1/aircrafts', createAircraftData, {})
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
@@ -114,7 +122,7 @@ const Aircraft: FC = (): ReactElement => {
             setUpdateAircraftError("Airline can not be blank")
         } else {
             // api call for create transaction
-            axios.patch('http://localhost:4000/api/v1/aircrafts', updateAircraftData, { withCredentials: true })
+            authAxios.patch('http://localhost:4000/api/v1/aircrafts', updateAircraftData, { })
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
@@ -133,7 +141,7 @@ const Aircraft: FC = (): ReactElement => {
     const handleDeleteAircraft = (aircraft_id: string) => {
 
         // api call for delete transaction
-        axios.delete(`http://localhost:4000/api/v1/aircrafts/${aircraft_id}`, { withCredentials: true })
+        authAxios.delete(`http://localhost:4000/api/v1/aircrafts/${aircraft_id}`, {})
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts("Aircraft successfully deleted.", true, 'SUCCESS'))
@@ -339,8 +347,7 @@ const Aircraft: FC = (): ReactElement => {
                 </div>
 
             </div>
-            <br />
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
                 <button onClick={handleRefresh} className="btn btn-outline-info" >
                     <RefreshBlack /> Refresh
                 </button>

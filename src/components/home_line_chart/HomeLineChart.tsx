@@ -1,5 +1,5 @@
 
-import { FC, ReactElement, useEffect } from "react";
+import { FC, ReactElement, useEffect, useRef } from "react";
 import { airports } from "../airport/Airport";
 import { Line } from 'react-chartjs-2'
 import { transactions } from "../transaction/transaction";
@@ -17,6 +17,10 @@ const colorHex = ["#ff1744", "#1e88e5", "#64ffda", "#aa00ff", "#cddc39", "#7e57c
 
 
 const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): ReactElement => {
+
+    // Ref to detect initial renderer
+    const initialRender = useRef(true)
+
     const dispatch = useDispatch()
 
     // retrive home line graph data from redux
@@ -37,6 +41,8 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
             return 0;
         }).map((airport, airportIndex) => {
             let tempQuantity = airport.fuel_available
+
+            if(transactions?.slice(0,25).find((data)=> airport.airport_id=== data.airport_id)){
             return (
                 {
                     label: `${airport.airport_name}`,
@@ -65,21 +71,35 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
                         }).slice(0, 25)
                     ,
                     fill: false,
-                    backgroundColor: colorHex[airportIndex],
-                    borderColor: colorHex[airportIndex],
+                    backgroundColor: colorHex[airportIndex%11],
+                    borderColor: colorHex[airportIndex%11],
                     // yAxisID: 'y-axis-1',
                 })
+            }else{
+                return{}
+            }
         })
 
         return data
     }
     useEffect(() => {
+        if(initialRender.current){
+            initialRender.current=false
+        }else{
         const tempLineGraphData = lineGraphData()
         dispatch(setHomeLineGraphData(tempLineGraphData))
+        }
         // eslint-disable-next-line
     }, [airports, transactions])
+    useEffect(()=>{
+        if(homeLineGraphData === null){
+            const tempLineGraphData = lineGraphData()
+            dispatch(setHomeLineGraphData(tempLineGraphData))
+            }
+        // eslint-disable-next-line
+    },[])
     return (
-        <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{ margin: "20px", minWidth: "fit-content" }}>
+        <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{ margin: "20px", minWidth: "fit-content", height: "fit-cotent" }}>
             <div className='header'>
                 <h1 className='title'>Report</h1>
                 <div className='links'>
@@ -96,6 +116,11 @@ const HomeLineChart: FC<HomeLineChartProps> = ({ airports, transactions }): Reac
                     datasets: homeLineGraphData
                     ,
                 }} options={{
+                    plugins: {
+                        legend: {
+                          display: false
+                        }
+                      },
                     scales: {
                         y: {
                             beginAtZero: false

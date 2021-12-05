@@ -1,4 +1,4 @@
-const logReducer = (state = window.sessionStorage.getItem("isLogin") as string === 'true'? true : false || false, action: any) => {
+const logReducer = (state = window.localStorage.getItem("isLogin") as string === 'true'? true : false || false, action: any) => {
     switch (action.type) {
         case 'USER_LOGIN':
             return state = true;

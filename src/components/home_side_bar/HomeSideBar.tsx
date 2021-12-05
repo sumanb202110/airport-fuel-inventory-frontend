@@ -19,10 +19,10 @@ const HomeSideBar: FC= (): ReactElement => {
             display: "flex",
             flexDirection: "row",
             flexWrap: "wrap",
-            margin: "15px",
+            margin: "20px",
             justifyContent: "center",
-            maxWidth: "40%",
-            minWidth: "22rem"
+            // maxWidth: "100%",
+            minWidth: "21rem"
         }}>
             {
                 airports?.sort(function (a, b) {

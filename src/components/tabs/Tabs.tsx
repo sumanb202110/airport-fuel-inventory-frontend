@@ -8,7 +8,7 @@ const Tabs: FC = (): ReactElement => {
     const homeTab = useSelector((state: state) => { return state.homeTab });
 
     return (
-        <ul className="nav nav-tabs">
+        <ul className="nav nav-tabs" style={{minWidth: "max-content"}}>
             <li className="nav-item">
                 <Link className={`nav-link ${homeTab === 'HOME' ? 'active' : ''}`} aria-current="page" to="/">Home</Link>
             </li>

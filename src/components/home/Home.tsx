@@ -1,4 +1,4 @@
-import { FC, ReactElement, useEffect } from "react";
+import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAircrafts, getAirports, getTransactions, setHomeTab } from "../../actions";
 // import { airports } from "../airport/Airport";
@@ -22,6 +22,9 @@ const Home: FC = (): ReactElement => {
 
     // retrive airports data from redux
     const airports = useSelector((state: state) => { return state.airports!.data });
+
+    // home refresh button show less
+    const [refreshButtonShowLess, setRefreshButtonShowLess] = useState(true)
 
 
     // Get airports function
@@ -69,9 +72,21 @@ const Home: FC = (): ReactElement => {
     return (
         <>
         <br/>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button onClick={handleRefresh} className="btn btn-outline-info" >
-                    <RefreshBlack /> Refresh
+            <div style={{ 
+                display: "flex",
+                justifyContent: "flex-end",
+                position: "fixed",
+                width: "100%",
+                zIndex: 10 as number
+                    }}>
+                <button onClick={handleRefresh}
+                style={{
+                margin: "5px",
+                backgroundColor: "#ffffff"
+                }}
+                 onMouseOver={()=>{setRefreshButtonShowLess(false)}}
+                  onMouseOut={()=>{setRefreshButtonShowLess(true)}} className="btn btn-outline-info" >
+                    <RefreshBlack /> {!refreshButtonShowLess?"Refresh":""}
                 </button>
             </div>
             <div style={{
@@ -83,7 +98,7 @@ const Home: FC = (): ReactElement => {
 
                 <br />
                 <div style={{
-                    width: "55vw"
+                    maxWidth: "60%"
                 }} >
 
                     <HomeLineChart transactions={transactions!} airports={airports!} />
@@ -91,8 +106,12 @@ const Home: FC = (): ReactElement => {
                     <HomePieChart airports={airports!} />
 
                 </div>
-
-                <HomeSideBar />
+                <div style={{
+                    maxWidth: "40%",
+                    minWidth: "20rem"
+                }} >
+                    <HomeSideBar />
+                </div>
 
             </div >
         </>

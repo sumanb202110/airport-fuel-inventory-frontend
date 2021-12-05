@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { login, setToasts, setUserDetails } from "../../actions";
 import { Link } from "react-router-dom";
+import jwt from "jsonwebtoken"
 
 
 type loginFormData = {
@@ -51,17 +52,21 @@ const Login: FC = (): ReactElement => {
             dispatch(setToasts("Invalid email", true, 'ERROR'))
         } else {
             // api call for login
-            axios.post('http://localhost:4000/api/v1/users/login', loginFormData, { withCredentials: true })
+            axios.post('http://localhost:4000/api/v1/users/login', loginFormData, {})
                 .then(function (response: any) {
                     console.log(response);
+                    window.localStorage.setItem("token", response.data.token);
+                    window.localStorage.setItem("refreshToken", response.data.refreshToken);
+
+                    const email = (jwt.decode(response.data.token) as any).email
                     dispatch(login())
-                    dispatch(setUserDetails(response.data.email))
-                    dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                    window.sessionStorage.setItem("isLogin", "true");
+                    dispatch(setUserDetails(email))
+                    dispatch(setToasts("Successfully login", true, 'SUCCESS'))
+                    window.localStorage.setItem("isLogin", "true");
                 })
                 .catch(function (error) {
                     console.log(error);
-                    dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+                    dispatch(setToasts(error?.response?.data.msg, true, 'ERROR'))
                 });
         }
 

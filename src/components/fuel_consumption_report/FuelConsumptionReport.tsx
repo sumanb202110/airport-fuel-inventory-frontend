@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAircrafts, getAirports, getTransactions, setHomeTab, setToasts } from "../../actions";
@@ -10,6 +10,7 @@ import { ReactComponent as ExpandLessBlack } from '../../svgs/expand_less_black_
 import { ReactComponent as ExpandMoreBlack } from '../../svgs/expand_more_black_24dp.svg'
 import { ReactComponent as ExpandLessWhite } from '../../svgs/expand_less_white_24dp.svg'
 import { ReactComponent as ExpandMoreWhite } from '../../svgs/expand_more_white_24dp.svg'
+import axios from "axios";
 
 
 
@@ -30,6 +31,14 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     // const [transactions, setTransactions] = useState<transactions>()
     const [airportHideStatus, setAirportHideStatus] = useState<airportHideStatus>()
     const [sortBy, setSortBy] = useState<sortBy>()
+
+    // Axios auth config
+    const authAxios = axios.create({
+        headers: {
+            Authorization: `Bearer ${window.localStorage.getItem("token")}`
+        }
+    })
+
     const dispatch = useDispatch()
 
     // retrive transactions data from redux
@@ -111,7 +120,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     // Revert transaction 
     const revertTransaction = (revertTransactionData: transaction) => {
         // api call for revert transaction
-        axios.post('http://localhost:4000/api/v1/transactions', revertTransactionData, { withCredentials: true })
+        authAxios.post('http://localhost:4000/api/v1/transactions', revertTransactionData, {})
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
@@ -130,19 +139,19 @@ const FuelConsumptionReport: FC = (): ReactElement => {
         dispatch(getTransactions(100));
     }
 
-
-
-
+   
     // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('FUEL_CONSUMPTION_REPORT'))
         // dispatch(getAirports())
         // dispatch(getTransactions())
-
+        const firstToShow = airports?.findIndex((airport)=>{
+            return airport.transactions?.length! >0
+        })
         const tempAirportHideStatus = airports?.map((airport, index) => {
             return {
                 airport_id: airport.airport_id,
-                status: index === 0 ? true : false
+                status: index ===  firstToShow ? true : false
             }
         }) as airportHideStatus
 
@@ -163,13 +172,12 @@ const FuelConsumptionReport: FC = (): ReactElement => {
 
     return (
         <div>
-            <br />
-            <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute" }}>Print</button>
-            <br />
-            <br />
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
+            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                <button onClick={handleRefresh} className="btn btn-outline-info no-print" style={{ margin: "10px"}} >
                     <RefreshBlack /> Refresh
+                </button>
+                <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", margin: "10px"}}>
+                    Print
                 </button>
             </div>
             {
@@ -187,7 +195,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                     return 0;
                 }).map((airport, airportIndex) => {
                     return (
-                        <div key={airport.airport_id.toString()} className="container accordion" style={{ backgroundColor: "#eeeeee" }}>
+                        <div key={airport.airport_id.toString()} className={`container accordion ${airportHideStatus?.filter((a) => a.airport_id === airport.airport_id)[0].status ? "" : "no-print" }`} style={{ backgroundColor: "#eeeeee" }}>
                             <div className="accordion-item">
                                 <h2 className="accordion-header" id="headingOne" onClick={() => handleAirportToggle(`${airport.airport_id}`)}>
                                     <button className="btn btn-outline" type="button" style={{ width: "100%" }}>
@@ -200,8 +208,12 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                             <ExpandMoreBlack />
                                     }
                                 </h2>
+                               
                                 <div id={`${airport.airport_id}DataContainer`} style={{ display: airportHideStatus?.filter((a) => a.airport_id === airport.airport_id)[0].status ? "block" : "none" }}>
                                     <br />
+                                    {
+                                    airport.transactions?.length! >0?
+                                    <>
                                     <div className="row justify-content-around" style={{ backgroundColor: "#1a237e", color: "#ffffff" }}>
                                         <div className="col-2">
                                             <strong>
@@ -330,6 +342,11 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                         })
                                     }
                                     <p>Fuel Available: {airport.fuel_available}</p>
+                                    </>
+                                    :
+                                    <p>No data available</p>
+                                }
+                                    
 
                                 </div>
                             </div>
