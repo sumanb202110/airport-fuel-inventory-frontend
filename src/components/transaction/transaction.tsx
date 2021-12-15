@@ -1,7 +1,7 @@
 // import axios from "axios";
 import { FC, ReactElement, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {getAircrafts, getAirports, getTransactions, setDeleteTransactionData, setDeleteTransactionFormHidden, setHomeTab, setSelectedTransaction, setToasts, setUpdateTransactionData, setUpdateTransactionFormHidden } from "../../actions";
+import { getAircrafts, getAirports, getTransactions, setDeleteTransactionData, setDeleteTransactionFormHidden, setHomeTab, setSelectedTransaction, setToasts, setTransactions, setUpdateTransactionData, setUpdateTransactionFormHidden } from "../../actions";
 // import { aircrafts } from "../aircraft/Aircraft";
 // import { airports } from "../airport/Airport";
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
@@ -10,7 +10,7 @@ import { ReactComponent as FilterListBlack } from '../../svgs/filter_list_black_
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 
 import { state } from "../../App";
-import TransactionSideBar from "../transaction_side_bar/TransactionSideBar";
+import TransactionSideBar from "./TransactionSideBar";
 import axios from "axios";
 
 
@@ -100,7 +100,7 @@ const Transaction: FC = (): ReactElement => {
     })
     const [filterSearchAirportName, setFilterSearchAirportName] = useState("")
     const [filterSearchAircraftNo, setFilterSearchAircraftNo] = useState("")
-    const [filterByTab,setFilterByTab] = useState("AIRPORT")
+    const [filterByTab, setFilterByTab] = useState("AIRPORT")
 
 
     const [count, setCount] = useState(10)
@@ -210,37 +210,7 @@ const Transaction: FC = (): ReactElement => {
         // dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100, sortBy))
     }
 
-    // Fetch transaction function
-    // const getTransactions = () => {
-    //     axios.get<transactions>(`http://localhost:4000/api/v1/transactions`, { withCredentials: true })
-    //         .then(function (response: any) {
-    //             setTransactions(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-    //         })
-    // }
-
-    // const getAircrafts = () => {
-    //     axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
-    //         .then(function (response) {
-    //             setAircrafts(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //         })
-    // }
-
-    // const getAirports = () => {
-    //     axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
-    //         .then(function (response) {
-    //             setAirports(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //         })
-    // }
+    
 
 
     // Submit create transaction form
@@ -260,7 +230,7 @@ const Transaction: FC = (): ReactElement => {
                 authAxios.post('http://localhost:4000/api/v1/transactions', createTransactionData, {})
                     .then(function (response: any) {
                         console.log(response);
-                        dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
+                        dispatch(setToasts(response?.data?.msg, true, 'SUCCESS'))
                         setCreateTransactionFormHidden(true)
                         const targetForm = event.target as HTMLFormElement
                         targetForm.reset()
@@ -272,13 +242,9 @@ const Transaction: FC = (): ReactElement => {
                                 quantity: 0
                             }
                         )
-                        dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
-                            sortBy,
-                            filterFormData.filterAirportId,
-                            filterFormData.filterAircraftId,
-                            filterFormData.filterTransactionType
-                        ));
-                        dispatch(getAirports());
+                        if(response.status === 201){
+                            dispatch(setTransactions([response.data, ...transactions]));
+                        }
                     })
                     .catch(function (error) {
                         console.log(error);
@@ -325,13 +291,24 @@ const Transaction: FC = (): ReactElement => {
                                 quantity: 0
                             }
                         )
-                        dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
-                            sortBy,
-                            filterFormData.filterAirportId,
-                            filterFormData.filterAircraftId,
-                            filterFormData.filterTransactionType
-                        ));
-                        dispatch(getAirports());
+                        if(response.status === 200){
+                            dispatch(setTransactions(transactions.map((transaction) => {
+                                if (transaction.transaction_id === updateTransactionData?.transaction_id) {
+                                    return {
+                                        ...transaction,
+                                        transaction_type: updateTransactionData.transaction_type!,
+                                        airport_id: updateTransactionData.airport_id,
+                                        aircraft_id: updateTransactionData.aircraft_id,
+                                        quantity: updateTransactionData.quantity
+    
+                                    }
+                                } else {
+                                    return transaction
+                                }
+                            })));
+                        }
+                        
+
                     })
                     .catch(function (error) {
                         console.log(error);
@@ -346,7 +323,7 @@ const Transaction: FC = (): ReactElement => {
     }
 
     // Submit update transaction form
-    const handleDeleteTransaction = (transaction_id: string) => {
+    const handleDeleteTransaction = (event: React.FormEvent, transaction_id: string) => {
 
         // api call for create transaction
         authAxios.delete(`http://localhost:4000/api/v1/transactions/${transaction_id}`, {})
@@ -354,18 +331,23 @@ const Transaction: FC = (): ReactElement => {
                 console.log(response);
                 dispatch(setToasts("Transaction deleted successfully.", true, 'SUCCESS'))
                 dispatch(setDeleteTransactionFormHidden(true))
-                dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100,
-                    sortBy,
-                    filterFormData.filterAirportId,
-                    filterFormData.filterAircraftId,
-                    filterFormData.filterTransactionType
-                ));
-                dispatch(getAirports());
+                if(response.status === 204){
+                    dispatch(setTransactions(transactions.filter((transaction) => {
+                        if (transaction.transaction_id !== transaction_id) {
+                            return true
+                        } else {
+                            return false
+                        }
+                    })));
+                }
+                
             })
             .catch(function (error) {
                 console.log(error);
                 dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
+    event.preventDefault();
+        
     }
 
     // Handle refresh function
@@ -447,15 +429,7 @@ const Transaction: FC = (): ReactElement => {
 
     useEffect(() => {
         dispatch(setHomeTab('TRANSACTION'))
-
-        // getTransactions();
-        // dispatch(getTransactions())
-
-        // dispatch(getAircrafts());
-
-        // dispatch(getAirports());
-
-        // eslint-disable-next-line
+    // eslint-disable-next-line
     }, [])
 
 
@@ -468,159 +442,7 @@ const Transaction: FC = (): ReactElement => {
             <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute" }}>Print</button>
             <br />
             <br />
-            <button
-                className="no-mobie"
-                onClick={() => { setFilterFormHidden(!fliterFormHidden) }}
-                style={{
-                    border: "none"
-                }}
-            >
-                <div className="no-print">
-                    <FilterListBlack />
-                </div>
-            </button>
-            <div className="no-mobile no-print" style={{
-                height: "10rem",
-                overflow: "hidden",
-                display: fliterFormHidden ? "none" : ""
-            }}>
-                <form style={{
-                    backgroundColor: "#b0bec5",
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "space-around",
-                    height: "100%",
-                    padding: "5px"
-                }} >
-                    <div style={{
-                        width: "10%"
-                    }}>
-                        <div onClick={()=>{setFilterByTab("AIRPORT")}}
-                        style={{
-                            backgroundColor: filterByTab === "AIRPORT"?"#f5f5f5":""
-                        }}
-                        >
-                            <label><strong>Airport</strong></label>
-                        </div>
-                        <div onClick={()=>{setFilterByTab("AIRCRAFT")}}
-                        style={{
-                            backgroundColor: filterByTab === "AIRCRAFT"?"#f5f5f5":""
-                        }}
-                        >
-                            <label><strong>Aircraft</strong></label>
-                        </div>
-                        <div onClick={()=>{setFilterByTab("TRANSACTION_TYPE")}}
-                        style={{
-                            backgroundColor: filterByTab === "TRANSACTION_TYPE"?"#f5f5f5":""
-                        }}
-                        >
-                            <label><strong>Transaction Type</strong></label>
-                        </div>
-                    </div>
-                    <div style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        width: "90%"
-                    }}>
-                        <div style={{
-                            width: "100%",
-                            height: "100%",
-                            overflowX: "scroll",
-                            display: filterByTab === "AIRPORT"?"flex":"none",
-                            flexDirection: "column",
-                            backgroundColor: filterByTab === "AIRPORT"?"#f5f5f5":""
-                        }}>
-                            <div style={{
-                                display: filterByTab === "AIRPORT"?"block":"none",
-                            }}>
-                                <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ border: "none" }} placeholder="Search airport" />
-                            </div>
-                            <div style={{
-                                height: "100%",
-                                width: "fit-content",
-                                display: filterByTab === "AIRPORT"?"flex":"none",
-                                flexDirection: "column",
-                                flexWrap: "wrap",
-                            }}>
-                                {
-                                    airports?.filter((airport) => {
-                                        return airport.airport_name.toUpperCase().includes(filterSearchAirportName.toUpperCase())
-                                    }).map((airport) => {
-                                        return (
-                                            <div className="form-check" key={airport.airport_id.toString()} style={{ width: "100%", display: "flex", margin: "5px" }}>
-                                                <input name="filterAirportId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
-                                                <label className="form-check-label" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
-                                                    {airport.airport_name}
-                                                </label>
-                                            </div>
 
-                                        )
-                                    })
-                                }
-                            </div>
-                        </div>
-                        <div style={{
-                            width: "100%",
-                            height: "100%",
-                            overflowX: "scroll",
-                            display: filterByTab === "AIRCRAFT"?"flex":"none",
-                            flexDirection: "column",
-                            backgroundColor: filterByTab === "AIRCRAFT"?"#f5f5f5":""
-                        }}
-                            >
-                            <div style={{ 
-                                display: filterByTab === "AIRCRAFT"?"block":"none",
-                                }}>
-                                <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ border: "none"}} placeholder="Search aircraft" />
-                            </div>
-                            <div style={{
-                                height: "100%",
-                                width: "fit-content",
-                                flexDirection: "column",
-                                flexWrap: "wrap",
-                                display: filterByTab === "AIRCRAFT"?"flex":"none"
-                            }} >
-                                {
-                                    aircrafts?.filter((aircraft) => {
-                                        return aircraft.aircraft_no.toUpperCase().includes(filterSearchAircraftNo.toUpperCase())
-                                    }).map((aircraft) => {
-                                        return (
-                                            <div className="form-check" key={aircraft.aircraft_id.toString()} style={{margin: "5px"}}>
-                                                <input name="filterAircraftId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
-                                                <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
-                                                    {aircraft.aircraft_no}
-                                                </label>
-                                            </div>
-
-                                        )
-                                    })
-                                }
-                            </div>
-                        </div>
-                        <div style={{
-                            display: filterByTab === "TRANSACTION_TYPE"?"flex":"none",
-                            width: "100%",
-                            height: "100%",
-                            backgroundColor: filterByTab === "TRANSACTION_TYPE"?"#f5f5f5":"",
-                            padding: "5px",
-                            flexDirection: "column"
-                        }}>
-                            <div className="form-check" style={{width: "fit-content"}}>
-                                <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
-                                <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
-                                    IN
-                                </label>
-                            </div>
-                            <div className="form-check" style={{width: "fit-content"}}>
-                                <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
-                                <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
-                                    OUT
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
 
             <div className={`modal ${createTransactionFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createTransactionFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
@@ -845,7 +667,7 @@ const Transaction: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { dispatch(setDeleteTransactionFormHidden(true)) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" onClick={() => { handleDeleteTransaction(deleteTransactionData?.transaction_id!) }} className="btn btn-primary">Delete</button>
+                                <button type="submit" onClick={(e) => { handleDeleteTransaction(e, deleteTransactionData?.transaction_id!) }} className="btn btn-primary">Delete</button>
 
                             </div>
                         </form>
@@ -854,201 +676,384 @@ const Transaction: FC = (): ReactElement => {
                 </div>
 
             </div>
-            <br />
-            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select no-print">
-                <option value="DATE_HIGH_LOW">Sort by date high to low</option>
-                <option value="DATE_LOW_HIGH">Sort by date low to high</option>
-                <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
-                <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
-            </select>
+
             <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
+                <select name="sortBy" onChange={handleSort} style={{ width: "15rem" }} id="sortBySelect" className="form-select no-print">
+                    <option value="DATE_HIGH_LOW">Sort by date high to low</option>
+                    <option value="DATE_LOW_HIGH">Sort by date low to high</option>
+                    <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
+                    <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
+                </select>
+                <span style={{ width: "10px" }}></span>
                 <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
                     <RefreshBlack /> Refresh
                 </button>
             </div>
-            <div style={{ display: "flex" }}>
-                <div className="container" >
-                    <div className="row justify-content-between" style={{
-                        backgroundColor: "#1a237e", color: "#ffffff",
-                        alignItems: "center"
-                    }}>
-                        <div className="col-md-2 d-none d-lg-block">
-                            <strong>
-                                Transaction Date and Time
-                            </strong>
-                        </div>
-                        <div className="col-md-1 d-none d-lg-block">
-                            <strong>
-                                Transaction type
-                            </strong>
-                        </div>
-                        <div className="col-2">
-                            <strong>
-                                Quantity (L)
-                            </strong>
-                        </div>
-                        <div className="col-1">
-                            <strong>
-                                Airport Id
-                            </strong>
-                        </div>
-                        <div className="col-2">
-                            <strong>
-                                Aircraft Id
-                            </strong>
-                        </div>
-                        <div className="col-2">
-                            <strong>
-                                Transaction Id of parent
-                            </strong>
-                        </div>
-                        <div className="col-2 no-print">
-                        </div>
-                    </div>
-                    {
-                        transactions
-                            // ?.filter((transaction) => {
-                            //     return (
-                            //         (filterFormData.filterAirportId.indexOf(transaction.airport_id) >= 0 || filterFormData.filterAirportId.length === 0)
-                            //         &&
-                            //         (filterFormData.filterAircraftId.indexOf(transaction.aircraft_id) >= 0 || filterFormData.filterAircraftId.length === 0)
-                            //         &&
-                            //         (filterFormData.filterTransactionType.indexOf(transaction.transaction_type) >= 0 || filterFormData.filterTransactionType.length === 0)
-                            //     )
+            <div className="container-fluid" style={{ }}>
+                <div className="row">
 
-                            // })
-                            // ?.sort(function (a, b) {
+                    <div className="col-md-2">
+                        <button
+                            className="no-mobie"
+                            onClick={() => { setFilterFormHidden(!fliterFormHidden) }}
+                            style={{
+                                border: "none"
+                            }}
+                        >
+                            <div className="no-print">
+                                <FilterListBlack />
+                            </div>
+                        </button>
+                        <div style={{
+                            backgroundColor: "#b0bec5"
+                        }}>
+                                    {
+                                        filterFormData.filterAirportId.length === 0?
+                                        null :
+                                    <label>Airports</label>
+                                    }
+                                    {filterFormData.filterAirportId.map((airportId: string)=>{
+                                        return <div key={airportId} style={{
+                                            // padding: "10px",
+                                            backgroundColor: "#f5f5f5"
 
-                            //     if (sortBy === "QUANTITY_HIGH_LOW") {
-                            //         return b.quantity - a.quantity
-                            //     } else if (sortBy === "QUANTITY_LOW_HIGH") {
-                            //         return a.quantity - b.quantity
-                            //     } else if (sortBy === "DATE_LOW_HIGH") {
-                            //         let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            //         let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            //         if (dateA < dateB) {
-                            //             return -1;
-                            //         }
-                            //         if (dateA > dateB) {
-                            //             return 1;
-                            //         }
+                                        }}>{
+                                            airports.find((airport)=>{
+                                            return airportId === airport.airport_id
+                                        })?.airport_name
+                                        }
+                                        </div> 
+                                    })}
+                                    {
+                                        filterFormData.filterAircraftId.length === 0?
+                                        null :
+                                    <label>Aircrafts</label>
+                                    }
+                                    {filterFormData.filterAircraftId.map((aircraftId: string)=>{
+                                        return <div key={aircraftId} style={{
+                                            // padding: "10px",
+                                            backgroundColor: "#f5f5f5"
+                                        }}>{aircraftId}</div>
+                                    })}
+                                    {
+                                        filterFormData.filterTransactionType.length === 0?
+                                        null :
+                                    <label>Transaction Type</label>
+                                    }  
+                                    {filterFormData.filterTransactionType.map((transactionId: string)=>{
+                                        return <div key={transactionId} style={{
+                                            // padding: "10px",
+                                            backgroundColor: "#f5f5f5"
+                                        }}>{transactionId}</div>
+                                    })}
+                                    
+                                </div>
+                        <div className="no-mobile no-print" style={{
+                            height: "100%",
+                            width: "100%",
+                            overflow: "auto",
+                            // wordWrap: "break-word",
+                            display: fliterFormHidden ? "none" : ""
+                        }}>
+                            <form style={{
+                                backgroundColor: "#b0bec5",
+                                // display: "flex",
+                                // flexDirection: "column",
+                                justifyContent: "space-around",
+                                height: "50vh",
+                                width: "100%",
+                                padding: "5px"
+                            }} >
+                                
+                                <div style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    height: "100%"
+                                }}>
+                                     <div onClick={() => { filterByTab ==="AIRPORT"?setFilterByTab("") : setFilterByTab("AIRPORT") }}
+                                        style={{
+                                            backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : "",
+                                            borderStyle: "solid",
+                                            borderWidth: "0px 0px 2px 0px"
+                                        }}
+                                    >
+                                        <label><strong>Airport</strong></label>
+                                    </div>
+                                    <div style={{
+                                            display: filterByTab === "AIRPORT" ? "block" : "none",
+                                            width: "100%"
+                                        }}>
+                                            <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ width: "100%" }} placeholder="Search airport" />
+                                        </div>
+                                    <div style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        overflow: "auto",
+                                        display: filterByTab === "AIRPORT" ? "flex" : "none",
+                                        flexDirection: "column",
+                                        backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : ""
+                                    }}>
+                                        
+                                        <div className="container-fluid g-0" style={{
+                                            height: "100%",
+                                            width: "100%",
+                                            display: filterByTab === "AIRPORT" ? "flex" : "none",
+                                            flexDirection: "column"
+                                            // wordWrap: "break-word"
+                                        }}>
+                                            {
+                                                airports?.filter((airport) => {
+                                                    return airport.airport_name.toUpperCase().includes(filterSearchAirportName.toUpperCase())
+                                                }).map((airport) => {
+                                                    return (
+                                                        <div className="row align-self-center" key={airport.airport_id.toString()} style={{
+                                                            width: "100%",
+                                                            justifyContent: "center",
+                                                            borderStyle: "groove",
+                                                            borderWidth: "2px 0px 2px 0px"
+                                                            }}>
+                                                            <input name="filterAirportId" onChange={handleFilterFormChangeRadioButton} className="col-2 align-self-center" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
+                                                            <label className="col-10" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
+                                                                {airport.airport_name}
+                                                            </label>
+                                                        </div>
 
-                            //         // names must be equal
-                            //         return 0;
-                            //     }
-                            //     else {
-                            //         let dateA = a.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            //         let dateB = b.transaction_date_time.toUpperCase(); // ignore upper and lowercase
-                            //         if (dateA < dateB) {
-                            //             return 1;
-                            //         }
-                            //         if (dateA > dateB) {
-                            //             return -1;
-                            //         }
-
-                            //         // names must be equal
-                            //         return 0;
-                            //     }
-                            // })
-                            ?.slice(0, count).map((transaction, transactionIndex) => {
-                                return (
-                                    <div className="row justify-content-between" key={transaction.transaction_id} onClick={() => { handleSelectedTransaction(transaction) }} id={`row${transaction.transaction_id}`} style={{
-                                        backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "",
-                                        alignItems: "center",
-                                        paddingRight: "20px",
-                                        border: `${selectedTransaction.transaction_id === transaction.transaction_id ? 'solid' : 'none'}`
-                                    }}
-                                        onMouseOver={
-                                            () => {
-                                                const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
-                                                row.style.backgroundColor = "#76ff03"
-                                            }}
-                                        onMouseOut={
-                                            () => {
-                                                const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
-                                                row.style.backgroundColor = transactionIndex % 2 !== 0 ? "#eeeeee" : ""
-                                            }}>
-                                        <div className="col-sm-2">
-                                            {new Date(transaction.transaction_date_time)
-                                                .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                                        </div>
-                                        <div className="col-sm-1">
-                                            {transaction.transaction_type}
-                                        </div>
-                                        <div className="col-2">
-                                            {transaction.quantity}
-                                        </div>
-                                        <div className="col-1">
-                                            {transaction.airport_id}
-                                        </div>
-                                        <div className="col-2">
-                                            {transaction.aircraft_id === "" ? "---" : transaction.aircraft_id}
-                                        </div>
-                                        <div className="col-2">
-                                            {transaction.transaction_id_parent === undefined ? "---" : transaction.transaction_id_parent}
-                                        </div>
-                                        <div className="col-2 no-print">
-                                            <button style={
-                                                {
-                                                    backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
-                                                    border: "none",
-                                                    borderRadius: "5px"
-                                                }
-                                            } onClick={() => {
-                                                dispatch(setUpdateTransactionData(
-                                                    {
-                                                        transaction_id: transaction.transaction_id,
-                                                        transaction_type: transaction.transaction_type,
-                                                        airport_id: transaction.airport_id,
-                                                        aircraft_id: transaction.aircraft_id,
-                                                        quantity: transaction.quantity
-                                                    }
-                                                ));
-                                                dispatch(setUpdateTransactionFormHidden(false))
-                                            }}>
-                                                <EditBlack />
-                                            </button>
-                                            <span style={{ padding: "5px" }}></span>
-                                            <button
-                                                style={
-                                                    {
-                                                        backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
-                                                        border: "none",
-                                                        borderRadius: "5px"
-                                                    }
-                                                }
-                                                onClick={() => {
-                                                    dispatch(setDeleteTransactionData(
-                                                        {
-                                                            transaction_id: transaction.transaction_id,
-                                                            transaction_type: transaction.transaction_type,
-                                                            airport_id: transaction.airport_id,
-                                                            aircraft_id: transaction.aircraft_id,
-                                                            quantity: transaction.quantity
-                                                        }
-                                                    ));
-                                                    dispatch(setDeleteTransactionFormHidden(false))
-                                                }}>
-                                                <DeleteBlack />
-                                            </button>
+                                                    )
+                                                })
+                                            }
                                         </div>
                                     </div>
-                                )
-                            })
-                    }
+                                    <div onClick={() => { filterByTab ==="AIRCRAFT"?setFilterByTab("") : setFilterByTab("AIRCRAFT") }}
+                                        style={{
+                                            backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : "",
+                                            borderStyle: "solid",
+                                            borderWidth: "0px 0px 2px 0px"
+                                        }}
+                                    >
+                                        <label><strong>Aircraft</strong></label>
+                                        <div style={{
+                                            display: filterByTab === "AIRCRAFT" ? "block" : "none",
+                                            width: "100%"
+                                        }}>
+                                            <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ width: "100%"}} placeholder="Search aircraft" />
+                                        </div>
+                                    </div>
+                                   
+                                    <div style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        overflowX: "auto",
+                                        display: filterByTab === "AIRCRAFT" ? "flex" : "none",
+                                        flexDirection: "column",
+                                        backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : ""
+                                    }}
+                                    >
+                                       
+                                        <div style={{
+                                            height: "100vh",
+                                            width: "fit-content",
+                                            flexDirection: "column",
+                                            justifyContent: "center",
+                                            display: filterByTab === "AIRCRAFT" ? "flex" : "none"
+                                        }} >
+                                            {
+                                                aircrafts?.filter((aircraft) => {
+                                                    return aircraft.aircraft_no.toUpperCase().includes(filterSearchAircraftNo.toUpperCase())
+                                                }).map((aircraft) => {
+                                                    return (
+                                                        <div className="form-check" key={aircraft.aircraft_id.toString()} style={{ margin: "5px" }}>
+                                                            <input name="filterAircraftId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
+                                                            <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
+                                                                {aircraft.aircraft_no}
+                                                            </label>
+                                                        </div>
 
-                    {
-                        transactions?.length! > count ?
-                            <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
-                            :
-                            null
+                                                    )
+                                                })
+                                            }
+                                        </div>
+                                    </div>
+                                    <div onClick={() => { filterByTab ==="TRANSACTION_TYPE"?setFilterByTab("") : setFilterByTab("TRANSACTION_TYPE")  }}
+                                        style={{
+                                            backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
+                                            borderStyle: "solid",
+                                            borderWidth: "0px 0px 2px 0px"
+                                        }}
+                                    >
+                                        <label><strong>Transaction Type</strong></label>
+                                    </div>
+                                    <div style={{
+                                        display: filterByTab === "TRANSACTION_TYPE" ? "flex" : "none",
+                                        width: "100%",
+                                        height: "100%",
+                                        backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
+                                        padding: "5px",
+                                        flexDirection: "column"
+                                    }}>
+                                        <div className="form-check" style={{ width: "fit-content" }}>
+                                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
+                                            <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
+                                                IN
+                                            </label>
+                                        </div>
+                                        <div className="form-check" style={{ width: "fit-content" }}>
+                                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
+                                            <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
+                                                OUT
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div className="col-md-10 container-fluid">
+                        <div className="row">
+                            <div className="col container" style={{ maxWidth: "100%", minWidth: "80%"}} >
+                                <div className="row justify-content-between" style={{
+                                    backgroundColor: "#1a237e", color: "#ffffff",
+                                    alignItems: "center"
+                                }}>
+                                    <div className="col-md-2 d-none d-lg-block">
+                                        <strong>
+                                            Transaction Date and Time
+                                        </strong>
+                                    </div>
+                                    <div className="col-md-1 d-none d-lg-block">
+                                        <strong>
+                                            Transaction type
+                                        </strong>
+                                    </div>
+                                    <div className="col-2">
+                                        <strong>
+                                            Quantity (L)
+                                        </strong>
+                                    </div>
+                                    <div className="col-1">
+                                        <strong>
+                                            Airport Id
+                                        </strong>
+                                    </div>
+                                    <div className="col-2">
+                                        <strong>
+                                            Aircraft Id
+                                        </strong>
+                                    </div>
+                                    <div className="col-2">
+                                        <strong>
+                                            Transaction Id of parent
+                                        </strong>
+                                    </div>
+                                    <div className="col-2 no-print">
+                                    </div>
+                                </div>
+                                {
+                                    transactions
+                                       
+                                        ?.slice(0, count).map((transaction, transactionIndex) => {
+                                            return (
+                                                <div className="row justify-content-between" key={transaction.transaction_id} onClick={() => { handleSelectedTransaction(transaction) }} id={`row${transaction.transaction_id}`} style={{
+                                                    backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "",
+                                                    alignItems: "center",
+                                                    paddingRight: "20px",
+                                                    border: `${selectedTransaction.transaction_id === transaction.transaction_id ? 'solid' : 'none'}`
+                                                }}
+                                                    onMouseOver={
+                                                        () => {
+                                                            const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
+                                                            row.style.backgroundColor = "#76ff03"
+                                                        }}
+                                                    onMouseOut={
+                                                        () => {
+                                                            const row = document.querySelector(`#row${transaction.transaction_id}`) as HTMLDivElement
+                                                            row.style.backgroundColor = transactionIndex % 2 !== 0 ? "#eeeeee" : ""
+                                                        }}>
+                                                    <div className="col-sm-2">
+                                                        {new Date(transaction.transaction_date_time)
+                                                            .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                                                    </div>
+                                                    <div className="col-sm-1">
+                                                        {transaction.transaction_type}
+                                                    </div>
+                                                    <div className="col-2">
+                                                        {transaction.quantity}
+                                                    </div>
+                                                    <div className="col-1">
+                                                        {transaction.airport_id}
+                                                    </div>
+                                                    <div className="col-2">
+                                                        {transaction.aircraft_id === "" ? "---" : transaction.aircraft_id}
+                                                    </div>
+                                                    <div className="col-2">
+                                                        {transaction.transaction_id_parent === undefined ? "---" : transaction.transaction_id_parent}
+                                                    </div>
+                                                    <div className="col-2 no-print">
+                                                        <button style={
+                                                            {
+                                                                backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
+                                                                border: "none",
+                                                                borderRadius: "5px"
+                                                            }
+                                                        } onClick={() => {
+                                                            dispatch(setUpdateTransactionData(
+                                                                {
+                                                                    transaction_id: transaction.transaction_id,
+                                                                    transaction_type: transaction.transaction_type,
+                                                                    airport_id: transaction.airport_id,
+                                                                    aircraft_id: transaction.aircraft_id,
+                                                                    quantity: transaction.quantity
+                                                                }
+                                                            ));
+                                                            dispatch(setUpdateTransactionFormHidden(false))
+                                                        }}>
+                                                            <EditBlack />
+                                                        </button>
+                                                        <span style={{ padding: "5px" }}></span>
+                                                        <button
+                                                            style={
+                                                                {
+                                                                    backgroundColor: transactionIndex % 2 !== 0 ? "#eeeeee" : "white",
+                                                                    border: "none",
+                                                                    borderRadius: "5px"
+                                                                }
+                                                            }
+                                                            onClick={() => {
+                                                                dispatch(setDeleteTransactionData(
+                                                                    {
+                                                                        transaction_id: transaction.transaction_id,
+                                                                        transaction_type: transaction.transaction_type,
+                                                                        airport_id: transaction.airport_id,
+                                                                        aircraft_id: transaction.aircraft_id,
+                                                                        quantity: transaction.quantity
+                                                                    }
+                                                                ));
+                                                                dispatch(setDeleteTransactionFormHidden(false))
+                                                            }}>
+                                                            <DeleteBlack />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })
+                                }
 
-                    }
+                                {
+                                    transactions?.length! > count ?
+                                        <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
+                                        :
+                                        null
+
+                                }
+
+                            </div>
+                            {/* <div className="col" style={{ maxWidth: "20%"}}> */}
+                                <TransactionSideBar />
+                            {/* </div> */}
+                        </div>
+                    </div>
 
                 </div>
-                <TransactionSideBar />
             </div>
-
             <br />
             <br />
         </div>

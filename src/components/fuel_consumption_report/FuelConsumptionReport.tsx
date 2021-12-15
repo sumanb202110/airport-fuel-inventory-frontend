@@ -49,13 +49,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
 
 
     const handleAirportToggle = (id: string) => {
-        // const airportDiv = document.querySelector(`#${id}`) as HTMLDivElement
-        // if (airportDiv.style.display === "none") {
-        //     airportDiv.style.display = "block"
-        // } else {
-        //     airportDiv.style.display = "none"
-        // }
-
+       
         const tempAirportHideStatus = airportHideStatus?.map((data) => {
             if (data.airport_id === id) {
                 return {
@@ -93,30 +87,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
         setSortBy(tempSortBy)
     }
 
-    // // Get airport details
-    // const getAirports = () => {
-    //     axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
-    //         .then(function (response) {
-    //             setAirports(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-    //         })
-    // }
-
-    // // Get transactions
-    // const getTransactions = () => {
-    //     axios.get<transactions>('http://localhost:4000/api/v1/transactions', { withCredentials: true })
-    //         .then(function (response) {
-    //             setTransactions(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-    //         })
-    // }
-
+    
     // Revert transaction 
     const revertTransaction = (revertTransactionData: transaction) => {
         // api call for revert transaction
@@ -143,8 +114,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     // Initial setup
     useEffect(() => {
         dispatch(setHomeTab('FUEL_CONSUMPTION_REPORT'))
-        // dispatch(getAirports())
-        // dispatch(getTransactions())
+       
         const firstToShow = airports?.findIndex((airport)=>{
             return airport.transactions?.length! >0
         })

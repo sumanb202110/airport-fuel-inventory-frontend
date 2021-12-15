@@ -1,26 +1,28 @@
 
 import { FC, ReactElement } from "react";
-import { airports } from "../airport/Airport";
 import { Pie } from 'react-chartjs-2'
-
-
-type HomePieChartProps = {
-    airports: airports
-}
+import { useSelector } from "react-redux";
+import { state } from "../../App";
 
 
 
-const HomePieChart: FC<HomePieChartProps> = ({ airports }): ReactElement => {
+
+const HomePieChart: FC= (): ReactElement => {
+
+
+// retrive airports data from redux
+const airports = useSelector((state: state) => { return state.airports!.data });
 
 
     return (
+        <div style={{padding: "10px"}}>
         <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{
             display: "flex",
             flexDirection: "row",
             flexWrap: "wrap",
-            minWidth: "21rem",
+            minWidth: "100%",
             // height: "50%",
-            margin: "20px",
+            // margin: "20px",
             // justifyContent: "space-around",
             justifyContent: "center"
 
@@ -72,6 +74,7 @@ const HomePieChart: FC<HomePieChartProps> = ({ airports }): ReactElement => {
                     )
                 })
             }
+        </div>
         </div>
     )
 }

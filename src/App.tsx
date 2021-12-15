@@ -16,7 +16,8 @@ import Logout from './components/logout/Logout';
 import Home from './components/home/Home';
 import Toasts from './components/toasts/Toasts';
 import Signup from './components/signup/Signup';
-import { getAircrafts, getAirports, getTransactions} from './actions';
+import { getAircrafts, getAirports, getTransactions } from './actions';
+// import Sidebar from './components/Sidebar/sidebar';
 
 
 export type state = {
@@ -25,35 +26,37 @@ export type state = {
     email: string
   },
   homeTab: string,
-  transactions?:{
-    data: transactions
+  transactions?: {
+    data: transactions,
+    report: any
   },
   selectedTransaction: transaction,
   updateTransaction?: {
     updateTransactionFormHidden: false,
     updateTransactionData: {
-        transaction_id: string,
-        transaction_type?: string,
-        airport_id: string,
-        aircraft_id: string,
-        quantity: number
+      transaction_id: string,
+      transaction_type?: string,
+      airport_id: string,
+      aircraft_id: string,
+      quantity: number
     }
   },
   deleteTransaction?: {
     deleteTransactionFormHidden: false,
     deleteTransactionData: {
-        transaction_id: string,
-        transaction_type?: string,
-        airport_id: string,
-        aircraft_id: string,
-        quantity: number
+      transaction_id: string,
+      transaction_type?: string,
+      airport_id: string,
+      aircraft_id: string,
+      quantity: number
     }
   },
   homeLineGraphData: any,
-  airports?:{
+  airports?: {
     data: airports
+    report: any
   },
-  aircrafts?:{
+  aircrafts?: {
     data: aircrafts
   },
   toastsMsg: {
@@ -76,7 +79,7 @@ export type response = {
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
-  
+
 
   const dispatch = useDispatch()
 
@@ -84,24 +87,24 @@ function App() {
   const aircrafts = useSelector((state: state) => { return state.aircrafts?.data });
   const airports = useSelector((state: state) => { return state.airports?.data });
   const isLogin = useSelector((state: state) => { return state.isLogin });
-  
+
 
 
 
   useEffect(() => {
     setIsLoading(false)
-    if(isLogin === true){
-      if(airports?.length === 0 || airports === null){
+    if (isLogin === true) {
+      if (airports?.length === 0 || airports === null) {
         dispatch(getAirports())
       }
-      if(aircrafts?.length === 0 || aircrafts === null){
+      if (aircrafts?.length === 0 || aircrafts === null) {
         dispatch(getAircrafts())
       }
-      if(transactions?.length === 0 || transactions === null){
+      if (transactions?.length === 0 || transactions === null) {
         dispatch(getTransactions(100))
       }
     }
-    
+
 
 
     // eslint-disable-next-line
@@ -109,13 +112,13 @@ function App() {
 
 
   useEffect(() => {
-      // if(window.localStorage.getItem("token")=== ""){
-      //   window.location.assign("/")
-      // }
-  // eslint-disable-next-line
+    // if(window.localStorage.getItem("token")=== ""){
+    //   window.location.assign("/")
+    // }
+    // eslint-disable-next-line
   }, [isLogin]);
-    
-    
+
+
 
 
 
@@ -123,7 +126,7 @@ function App() {
     <div className="App">
       {
         isLoading ?
-          <div style = {{marginTop: "40vh"}}>
+          <div style={{ marginTop: "40vh" }}>
             <div className="spinner-grow text-primary" role="status">
               <span className="sr-only"></span>
             </div>
@@ -154,27 +157,42 @@ function App() {
               {
                 isLogin ?
                   <>
-                    <Nav />
-                    <Switch>
-                      <Route exact path="/">
-                        <Home />
-                      </Route>
-                      <Route exact path="/airports">
-                        <Airport />
-                      </Route>
-                      <Route exact path="/aircrafts">
-                        <Aircraft />
-                      </Route>
-                      <Route exact path="/transactions">
-                        <Transaction />
-                      </Route>
-                      <Route exact path="/reports">
-                        <FuelConsumptionReport />
-                      </Route>
-                      <Route exact path="/logout">
-                        <Logout />
-                      </Route>
-                    </Switch>
+                        <Nav />
+                      <div className="container-fluid">
+                      <div className="row" style={{
+                   
+                      }}>
+                        {/* <div className="col-2 d-none d-md-block" style={{
+                          
+                        }}>
+                          <Sidebar />
+                        </div> */}
+                        <div className="col-12" style={{
+                        }}>
+                          <Switch>
+                            <Route exact path="/">
+                              <Home />
+                            </Route>
+                            <Route exact path="/airports">
+                              <Airport />
+                            </Route>
+                            <Route exact path="/aircrafts">
+                              <Aircraft />
+                            </Route>
+                            <Route exact path="/transactions">
+                              <Transaction />
+                            </Route>
+                            <Route exact path="/reports">
+                              <FuelConsumptionReport />
+                            </Route>
+                            <Route exact path="/logout">
+                              <Logout />
+                            </Route>
+                          </Switch>
+                        </div>
+                      </div>
+                      </div>
+
                   </>
                   :
                   <Switch>

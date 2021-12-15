@@ -2,11 +2,8 @@
 import { FC, ReactElement } from "react";
 import { useSelector } from "react-redux";
 import { state } from "../../App";
+import HomeTodayTransactions from "./HomeTodayTransactions";
 
-// type HomeSideBarProps = {
-//     airports: airports,
-//     transactions: transactions
-// }
 
 
 
@@ -15,15 +12,19 @@ const HomeSideBar: FC= (): ReactElement => {
     const airports = useSelector((state: state) => { return state.airports!.data });
 
     return (
+        <div style={{padding: "10px"}}>
         <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{
             display: "flex",
             flexDirection: "row",
             flexWrap: "wrap",
-            margin: "20px",
+            // margin: "20px",
             justifyContent: "center",
             // maxWidth: "100%",
-            minWidth: "21rem"
+            minWidth: "100%"
         }}>
+            <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{width: "100%"}}>
+                <HomeTodayTransactions/>
+            </div>
             {
                 airports?.sort(function (a, b) {
                     var nameA = a.airport_name.toUpperCase(); // ignore upper and lowercase
@@ -40,7 +41,7 @@ const HomeSideBar: FC= (): ReactElement => {
                 }).map((airport) => {
                     return (
                         <div key={airport.airport_id.toString()} className="card shadow p-2 mb-5 bg-body rounded" style={{ marginLeft: "5px" }}>
-                            <div className="card-body" style={{ width: "18rem", maxHeight: "16rem", overflowY: "hidden" }}>
+                            <div className="card-body" style={{ width: "100%", maxWidth: "18rem", maxHeight: "16rem", overflowY: "hidden" }}>
                                 <label><strong>{airport.airport_name}</strong></label>
 
                                 {
@@ -70,6 +71,7 @@ const HomeSideBar: FC= (): ReactElement => {
                 })
             }
 
+        </div>
         </div>
     )
 }

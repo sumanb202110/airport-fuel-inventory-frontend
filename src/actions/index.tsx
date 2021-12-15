@@ -6,8 +6,9 @@ import { transaction, transactions } from "../components/transaction/transaction
 
 export type action = {
     type: 'USER_LOGIN' | 'USER_LOGOUT' | 'HOME_SET_TAB' |
-     'TOASTS_MSG' | 'GET_TRANSACTIONS' | 'GET_AIRPORTS' |
-      'GET_AIRCRAFTS' | 'SET_SELECTED_TRANSACTION' | 'SET_UPDATE_TRANSACTION_DATA'|
+     'TOASTS_MSG' | 'GET_TRANSACTIONS' | 'GET_TRANSACTIONS_REPORT' | 'SET_TRANSACTIONS' |
+      'GET_AIRPORTS' | 'SET_AIRPORTS' | 'GET_AIRPORTS_REPORT' |
+      'GET_AIRCRAFTS' | 'SET_AIRCRAFTS' | 'SET_SELECTED_TRANSACTION' | 'SET_UPDATE_TRANSACTION_DATA'|
       'SET_UPDATE_TRANSACTION_FORM_HIDDEN' | 'SET_DELETE_TRANSACTION_DATA' | 
       'SET_DELETE_TRANSACTION_FORM_HIDDEN' |'SET_HOME_LINE_GRAPH_DATA'
       ,
@@ -96,6 +97,35 @@ export const getTransactions = (count: number, sortBy?: string, airportIds?: Arr
     }
 };
 
+export const getTransactionsReport = ()=> async (dispatch: Dispatch<any>) => {
+    try {
+        // Axios auth config
+        const authAxios = axios.create({
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            }
+        })
+        const response = await authAxios.get<any>(
+            `http://localhost:4000/api/v1/transactions/report`)
+        dispatch(
+            {
+                type: 'GET_TRANSACTIONS_REPORT',
+                payload: response.data 
+            }
+        )
+    } catch (error: any) {
+        console.log(error)
+        dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+    }
+};
+
+// Set transactions action
+export const setTransactions = (transactions: transactions) => {
+    return {
+        type: 'SET_TRANSACTIONS',
+        payload: transactions
+    }
+}
 
 // Selected transaction action
 export const setSelectedTransaction = (selectedTransaction: transaction) => {
@@ -169,6 +199,37 @@ export const getAirports = () => async (dispatch: Dispatch<any>) => {
     }
 };
 
+export const setAirports = (airports: airports) => async (dispatch: Dispatch<any>) => {
+        dispatch(
+            {
+                type: 'SET_AIRPORTS',
+                payload: airports
+            }
+        )
+};
+
+export const getAirportsReport = ()=> async (dispatch: Dispatch<any>) => {
+    try {
+        // Axios auth config
+        const authAxios = axios.create({
+            headers: {
+                Authorization: `Bearer ${window.localStorage.getItem("token")}`
+            }
+        })
+        const response = await authAxios.get<any>(
+            `http://localhost:4000/api/v1/airports/report`)
+        dispatch(
+            {
+                type: 'GET_AIRPORTS_REPORT',
+                payload: response.data 
+            }
+        )
+    } catch (error: any) {
+        console.log(error)
+        dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+    }
+};
+
 export const getAircrafts = () => async (dispatch: Dispatch<any>) => {
     try {
         // Axios auth config
@@ -189,6 +250,17 @@ export const getAircrafts = () => async (dispatch: Dispatch<any>) => {
         dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
     }
 };
+
+
+export const setAircrafts = (aircrafts: aircrafts) => async (dispatch: Dispatch<any>) => {
+        dispatch(
+            {
+                type: 'SET_AIRCRAFTS',
+                payload: aircrafts
+            }
+        )
+};
+
 
 // Home page line graph data
 export const setHomeLineGraphData = (homeLineGraphData: Array<object>) => {

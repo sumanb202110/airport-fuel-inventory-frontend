@@ -1,6 +1,6 @@
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux'
-import { getAircrafts, setHomeTab, setToasts } from "../../actions";
+import { getAircrafts, setAircrafts, setHomeTab, setToasts } from "../../actions";
 // import axios from 'axios'
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
 import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
@@ -22,6 +22,10 @@ export type aircraft = {
 
 const Aircraft: FC = (): ReactElement => {
     // const [aircrafts, setAircrafts] = useState<aircrafts>()
+
+     // count aircraft view
+     const [count, setCount] = useState(10)
+
     const [createAircraftFormHidden, setCreateAircraftFormHidden] = useState<boolean>(true)
     const [createAircraftData, setCreateAircraftData] = useState<aircraft>({
         aircraft_id: "",
@@ -58,22 +62,22 @@ const Aircraft: FC = (): ReactElement => {
     // retrive aircrafts data from redux
     const aircrafts = useSelector((state: state) => { return state.aircrafts!.data });
 
-    // Get aircraft function
-    // const getAircrafts = () => {
-    //     axios.get<aircrafts>('http://localhost:4000/api/v1/aircrafts', { withCredentials: true })
-    //         .then(function (response) {
-    //             setAircrafts(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //         })
-    // }
+    
 
     // handle create aircraft form input change function
     const handleAircraftCreateFormChange = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
         setCreateAircraftData({ ...createAircraftData, [target.name]: target.value })
     }
+
+
+     // Handle load more
+     const handleLoadMore = ()=>{
+        if(count< aircrafts.length){
+            setCount(count+10)
+        }
+    }
+
 
     // Submit form to create aircraft
     const handleAircraftCreateFormSubmit = (event: React.FormEvent) => {
@@ -93,7 +97,9 @@ const Aircraft: FC = (): ReactElement => {
                     setCreateAircraftFormHidden(true)
                     const targetForm = event.target as HTMLFormElement
                     targetForm.reset()
-                    dispatch(getAircrafts());
+                    if(response.status === 201){
+                        dispatch(setAircrafts([response.data, ...aircrafts]));
+                    }
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -127,7 +133,21 @@ const Aircraft: FC = (): ReactElement => {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
                     setUpdateAircraftFormHidden(true)
-                    dispatch(getAircrafts());
+                    if (response.status === 200) {
+                        dispatch(setAircrafts(aircrafts.map((aircraft) => {
+                            if (aircraft.aircraft_id === updateAircraftData?.aircraft_id) {
+                                return {
+                                    ...aircraft,
+                                    aircraft_id: updateAircraftData.aircraft_id,
+                                    aircraft_no: updateAircraftData.aircraft_no,
+                                    airline: updateAircraftData.airline
+
+                                }
+                            } else {
+                                return aircraft
+                            }
+                        })));
+                    }
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -138,19 +158,30 @@ const Aircraft: FC = (): ReactElement => {
     }
 
     // Submit form to create aircraft
-    const handleDeleteAircraft = (aircraft_id: string) => {
+    const handleDeleteAircraft = (event: React.FormEvent, aircraft_id: string) => {
 
         // api call for delete transaction
         authAxios.delete(`http://localhost:4000/api/v1/aircrafts/${aircraft_id}`, {})
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts("Aircraft successfully deleted.", true, 'SUCCESS'))
-                dispatch(getAircrafts());
+                setDeleteAircraftFormHidden(true)
+                if(response.status ===  204){
+                    dispatch(setAircrafts(aircrafts.filter((aircraft)=>{
+                        if(aircraft.aircraft_id === aircraft_id){
+                            return false
+                        }else{
+                            return true
+                        }
+                    })));
+                }
             })
             .catch(function (error) {
                 console.log(error);
                 dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
+        event.preventDefault()
+        
     }
 
     // Handle refresh function
@@ -338,7 +369,7 @@ const Aircraft: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setDeleteAircraftFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" onClick={() => { handleDeleteAircraft(deleteAircraftData.aircraft_id.toString()) }} className="btn btn-primary">Delete</button>
+                                <button type="submit" onClick={(e) => { handleDeleteAircraft(e, deleteAircraftData.aircraft_id.toString()) }} className="btn btn-primary">Delete</button>
 
                             </div>
                         </form>
@@ -376,7 +407,7 @@ const Aircraft: FC = (): ReactElement => {
                     {/* <hr />  */}
                 </div>
                 {
-                    aircrafts?.map((aircraft, aircraftIndex) => {
+                    aircrafts?.slice(0, count).map((aircraft, aircraftIndex) => {
                         return (
                             <div className="row" key={aircraft.aircraft_id} style={{
                                 alignItems: "center",
@@ -449,6 +480,13 @@ const Aircraft: FC = (): ReactElement => {
                         )
                     })
                 }
+                 {
+                        aircrafts?.length! > count ?
+                            <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
+                            :
+                            null
+
+                    }
             </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React, { FC, ReactElement, useEffect, useState } from "react";
 // import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAirports, setHomeTab, setToasts } from "../../actions";
+import { getAirports, setAirports, setHomeTab, setToasts } from "../../actions";
 import { ReactComponent as EditBlack } from '../../svgs/edit_black_24dp.svg'
 import { ReactComponent as DeleteBlack } from '../../svgs/delete_black_24dp.svg'
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
@@ -22,6 +22,10 @@ export type airport = {
 
 const Airport: FC = (): ReactElement => {
     // const [airports, setAirports] = useState<airports>()
+
+    // count airport view
+    const [count, setCount] = useState(10)
+
     const [createAirportFormHidden, setCreateAirportFormHidden] = useState<boolean>(true)
     const [createAirportData, setCreateAirportData] = useState<airport>({
         "airport_id": "",
@@ -72,18 +76,13 @@ const Airport: FC = (): ReactElement => {
 
     }
 
+    // Handle load more
+    const handleLoadMore = () => {
+        if (count < airports.length) {
+            setCount(count + 10)
+        }
+    }
 
-    // Get airport function
-    // const getAirports = () => {
-    //     axios.get<airports>('http://localhost:4000/api/v1/airports', { withCredentials: true })
-    //         .then(function (response) {
-    //             setAirports(response.data)
-    //         })
-    //         .catch(function (error: any) {
-    //             console.log(error)
-    //             dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-    //         })
-    // }
 
 
     // Handle create airport form change
@@ -111,7 +110,9 @@ const Airport: FC = (): ReactElement => {
                     const targetForm = event.target as HTMLFormElement
                     targetForm.reset()
                     setCreateAirportFormHidden(true)
-                    dispatch(getAirports());
+                    if (response.status === 201) {
+                        dispatch(setAirports([response.data, ...airports]));
+                    }
 
                 })
                 .catch(function (error) {
@@ -148,12 +149,27 @@ const Airport: FC = (): ReactElement => {
         } else {
             setUpdateAirportError("")
             // api call for create transaction
-            authAxios.patch(`http://localhost:4000/api/v1/airports/${updateAirportData.airport_id}`, updateAirportData, { })
+            authAxios.patch(`http://localhost:4000/api/v1/airports/${updateAirportData.airport_id}`, updateAirportData, {})
                 .then(function (response: any) {
                     console.log(response);
                     dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
                     setUpdateAirportFormHidden(true)
-                    dispatch(getAirports());
+                    if (response.status === 200) {
+                        dispatch(setAirports(airports.map((airport) => {
+                            if (airport.airport_id === updateAirportData?.airport_id) {
+                                return {
+                                    ...airport,
+                                    airport_id: updateAirportData.airport_id ,
+                                    airport_name: updateAirportData.airport_name,
+                                    fuel_capacity: updateAirportData.fuel_capacity,
+                                    fuel_available: updateAirportData.fuel_available
+
+                                }
+                            } else {
+                                return airport
+                            }
+                        })));
+                    }
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -164,19 +180,28 @@ const Airport: FC = (): ReactElement => {
     }
 
     // Handle delete airport
-    const handleDeleteAirport = (airport_id: string) => {
+    const handleDeleteAirport = (event: React.FormEvent, airport_id: string) => {
         // api call for create transaction
         authAxios.delete(`http://localhost:4000/api/v1/airports/${airport_id}`, {})
             .then(function (response: any) {
                 console.log(response);
                 dispatch(setToasts("Deleted successfully", true, 'SUCCESS'))
                 setDeleteAirportFormHidden(true)
-                dispatch(getAirports());
+                if(response.status === 204){
+                    dispatch(setAirports(airports.filter((airport) => {
+                        if (airport.airport_id !== airport_id) {
+                            return true
+                        } else {
+                            return false
+                        }
+                    })));
+                }
             })
             .catch(function (error) {
                 console.log(error);
                 dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
+            event.preventDefault();
     }
 
     // Handle refresh function
@@ -185,7 +210,7 @@ const Airport: FC = (): ReactElement => {
     }
 
     // On update form data change
-    useEffect(()=>{
+    useEffect(() => {
         if (Number(updateAirportData.fuel_available) > Number(updateAirportData.fuel_capacity)) {
             setUpdateAirportError("Fuel available can not be greater then fuel capacity")
         } else if (Number(updateAirportData.fuel_available) < 0) {
@@ -195,10 +220,10 @@ const Airport: FC = (): ReactElement => {
         } else {
             setUpdateAirportError("")
         }
-    },[updateAirportData])
+    }, [updateAirportData])
 
     // On create form data change
-    useEffect(()=>{
+    useEffect(() => {
         if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
             setCreateAirportError("Fuel available can not be greater then fuel capacity")
         } else if (Number(createAirportData.fuel_available) < 0) {
@@ -208,7 +233,7 @@ const Airport: FC = (): ReactElement => {
         } else {
             setCreateAirportError("")
         }
-    },[createAirportData])
+    }, [createAirportData])
 
 
     // Initial loading
@@ -264,7 +289,7 @@ const Airport: FC = (): ReactElement => {
                                             </label>
                                             <input onChange={handleCreateAirportFormChange} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
-                                        <span style={{color:"#e53935"}}>
+                                        <span style={{ color: "#e53935" }}>
                                             {createAirportError}
                                         </span>
                                     </fieldset>
@@ -321,7 +346,7 @@ const Airport: FC = (): ReactElement => {
                                             </label>
                                             <input onChange={handleUpdateAirportFormChange} value={Number(updateAirportData.fuel_available)} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
-                                        <span style={{color: "#e53935"}}>
+                                        <span style={{ color: "#e53935" }}>
                                             {updateAirportError}
                                         </span>
                                     </fieldset>
@@ -384,7 +409,7 @@ const Airport: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setDeleteAirportFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="button" onClick={() => { handleDeleteAirport(deleteAirportData.airport_id.toString()) }} className="btn btn-primary">Delete</button>
+                                <button type="button" onClick={(e) => { handleDeleteAirport(e, deleteAirportData.airport_id.toString()) }} className="btn btn-primary">Delete</button>
 
                             </div>
                         </form>
@@ -394,13 +419,16 @@ const Airport: FC = (): ReactElement => {
 
             </div>
             <br />
-            <select name="sortBy" onChange={handleSort} id="sortBySelect" className="form-select no-print">
-                <option value="NAME_A_Z">Sort by Name A to Z</option>
-                <option value="NAME_Z_A">Sort by Name Z to A</option>
-                <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>
-                <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
-            </select>
+
             <div style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
+                <select name="sortBy" style={{ width: "15rem" }} onChange={handleSort} id="sortBySelect" className="form-select no-print">
+                    <option value="NAME_A_Z">Sort by Name A to Z</option>
+                    <option value="NAME_Z_A">Sort by Name Z to A</option>
+                    <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>
+                    <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
+                </select>
+                <span style={{ width: "10px" }}>
+                </span>
                 <button onClick={handleRefresh} className="btn btn-outline-info" >
                     <RefreshBlack /> Refresh
                 </button>
@@ -478,7 +506,7 @@ const Airport: FC = (): ReactElement => {
                             return 0;
                         }
 
-                    }).map((airport, airportIndex) => {
+                    }).slice(0, count).map((airport, airportIndex) => {
                         return (
                             <div key={airport.airport_id.toString()} className="row" style={{
                                 alignItems: "center",
@@ -556,6 +584,13 @@ const Airport: FC = (): ReactElement => {
 
                         )
                     })
+                }
+                {
+                    airports?.length! > count ?
+                        <button type="button" style={{ margin: "10px" }} className="btn btn-outline-secondary no-print" onClick={handleLoadMore}>Load More</button>
+                        :
+                        null
+
                 }
             </div>
         </div>
