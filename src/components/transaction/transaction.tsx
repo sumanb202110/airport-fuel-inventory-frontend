@@ -32,11 +32,6 @@ export type transaction = {
     quantity?: number,
     transaction_id_parent?: string
 }
-// type filterFormData = {
-//     filterAirportId?: [],
-//     filterAircraftId?: [],
-//     filterTransacrtionType?: string
-// }
 
 const Transaction: FC = (): ReactElement => {
     // Ref to detect initial renderer
@@ -45,9 +40,7 @@ const Transaction: FC = (): ReactElement => {
     const filterAirportSearchInput = useRef<HTMLInputElement>(null)
     const filterAircraftSearchInput = useRef<HTMLInputElement>(null)
 
-    // const [transactions, setTransactions] = useState<transactions>()
-    // const [aircrafts, setAircrafts] = useState<aircrafts>()
-    // const [airports, setAirports] = useState<airports>()
+    
     const [createTransactionFormHidden, setCreateTransactionFormHidden] = useState<boolean>(true)
     const [createTransactionData, setCreateTransactionData] = useState<transaction>({
         transaction_type: "IN",
@@ -57,14 +50,7 @@ const Transaction: FC = (): ReactElement => {
     })
     const [createTransactionError, setCreateTransactionError] = useState("")
 
-    // const [updateTransactionFormHidden, setUpdateTransactionFormHidden] = useState<boolean>(true)
-    // const [updateTransactionData, setUpdateTransactionData] = useState<transaction>({
-    //     transaction_id: "",
-    //     transaction_type: "IN",
-    //     airport_id: "",
-    //     aircraft_id: "",
-    //     quantity: 0
-    // })
+   
 
     // retrive update transaction data from redux
     const updateTransactionData = useSelector((state: state) => { return state.updateTransaction?.updateTransactionData });
@@ -74,15 +60,6 @@ const Transaction: FC = (): ReactElement => {
     const [updateTransactionError, setUpdateTransactionError] = useState("")
 
 
-
-    // const [deleteTransactionFormHidden, setDeleteTransactionFormHidden] = useState<boolean>(true)
-    // const [deleteTransactionData, setDeleteTransactionData] = useState<transaction>({
-    //     transaction_id: "",
-    //     transaction_type: "IN",
-    //     airport_id: "",
-    //     aircraft_id: "",
-    //     quantity: 0
-    // })
 
     // retrive delete transaction data from redux
     const deleteTransactionData = useSelector((state: state) => { return state.deleteTransaction?.deleteTransactionData });
@@ -131,9 +108,7 @@ const Transaction: FC = (): ReactElement => {
     // Filter form change handler
     const handleFilterFormChangeRadioButton = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
-        // if(target.name === "filterTransactionType"){
-        //     setFilterFormData({...filterFormData, filterTransactionType: target.value})
-        // }else{
+        
         let tempData: any = []
         document.querySelectorAll(`input[name=${target.name}]`).forEach((data: any) => {
             if (data.checked) {
@@ -141,7 +116,6 @@ const Transaction: FC = (): ReactElement => {
             }
         })
         setFilterFormData({ ...filterFormData, [target.name]: tempData })
-        // }
     }
 
     const handleFilterAirportSearchChange = () => {
