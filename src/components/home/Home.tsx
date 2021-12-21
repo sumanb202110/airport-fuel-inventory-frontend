@@ -8,6 +8,7 @@ import HomeSideBar from "./HomeSideBar";
 import HomePieChart from "./HomePieChart";
 import HomeLineChart from "./HomeLineChart";
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
+
 import { state } from "../../App";
 import HomeBarChart from "./HomeBarChart";
 import HomeReportAirportLTE20 from "./HomeReportAirportLTE20";
@@ -79,8 +80,10 @@ const Home: FC = (): ReactElement => {
                 }} >
                     <div>
 
-                        <div style={{ padding: "10px" }}>
-                            <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{ width: "100%", height: "fit-content" }}>
+                        <div style={{ 
+                            // padding: "10px" 
+                            }}>
+                            <div className="shadow-lg p-3 mb-4 bg-body rounded" style={{ width: "100%", height: "fit-content" }}>
                                 <div className='header'>
                                     <ul className="nav nav-pills nav-fill">
                                         <li className="nav-item" >

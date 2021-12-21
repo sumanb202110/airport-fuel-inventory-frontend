@@ -8,11 +8,17 @@ import HomeTodayTransactions from "./HomeTodayTransactions";
 
 
 const HomeSideBar: FC= (): ReactElement => {
-// retrive airports data from redux
+    // retrive airports data from redux
     const airports = useSelector((state: state) => { return state.airports!.data });
 
+
+    // Transaction reports
+    const transactionReport = useSelector((state: state) => { return state.transactions?.report });
+
     return (
-        <div style={{padding: "10px"}}>
+        <div style={{
+            // padding: "10px"
+            }}>
         <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{
             display: "flex",
             flexDirection: "row",
@@ -26,19 +32,21 @@ const HomeSideBar: FC= (): ReactElement => {
                 <HomeTodayTransactions/>
             </div>
             {
-                airports?.sort(function (a, b) {
-                    var nameA = a.airport_name.toUpperCase(); // ignore upper and lowercase
-                    var nameB = b.airport_name.toUpperCase(); // ignore upper and lowercase
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
+                airports?.filter((airport)=>transactionReport?.mostRecent10TransactedAirports.slice(0,5).find((data: any)=> data===airport.airport_id))
+                // .sort(function (a, b) {
+                //     var nameA = a.airport_name.toUpperCase(); // ignore upper and lowercase
+                //     var nameB = b.airport_name.toUpperCase(); // ignore upper and lowercase
+                //     if (nameA < nameB) {
+                //         return -1;
+                //     }
+                //     if (nameA > nameB) {
+                //         return 1;
+                //     }
 
-                    // names must be equal
-                    return 0;
-                }).map((airport) => {
+                //     // names must be equal
+                //     return 0;
+                // })
+                .map((airport) => {
                     return (
                         <div key={airport.airport_id.toString()} className="card shadow p-2 mb-5 bg-body rounded" style={{ marginLeft: "5px" }}>
                             <div className="card-body" style={{ width: "100%", maxWidth: "18rem", maxHeight: "16rem", overflowY: "hidden" }}>

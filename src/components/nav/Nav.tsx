@@ -3,6 +3,8 @@ import Tabs from "../tabs/Tabs";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { state } from "../../App";
+import { ReactComponent as AcountCircleBlack } from '../../svgs/account_circle_black_24dp.svg'
+
 
 
 
@@ -30,6 +32,9 @@ const Nav: FC = (): ReactElement => {
                         }}>
 
                             <li className="nav-item" style={{ alignSelf: "center" }}>
+                                <span className="d-none">
+                                    <AcountCircleBlack/>
+                                </span>
                                 <span style={{ alignSelf: "center" }}>{userDetails.email}</span>
                             </li>
                             <span style={{ width: "10px" }}></span>

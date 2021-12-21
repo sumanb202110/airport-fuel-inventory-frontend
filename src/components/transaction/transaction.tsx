@@ -40,7 +40,7 @@ const Transaction: FC = (): ReactElement => {
     const filterAirportSearchInput = useRef<HTMLInputElement>(null)
     const filterAircraftSearchInput = useRef<HTMLInputElement>(null)
 
-    
+
     const [createTransactionFormHidden, setCreateTransactionFormHidden] = useState<boolean>(true)
     const [createTransactionData, setCreateTransactionData] = useState<transaction>({
         transaction_type: "IN",
@@ -50,7 +50,7 @@ const Transaction: FC = (): ReactElement => {
     })
     const [createTransactionError, setCreateTransactionError] = useState("")
 
-   
+
 
     // retrive update transaction data from redux
     const updateTransactionData = useSelector((state: state) => { return state.updateTransaction?.updateTransactionData });
@@ -108,7 +108,7 @@ const Transaction: FC = (): ReactElement => {
     // Filter form change handler
     const handleFilterFormChangeRadioButton = (event: React.FormEvent<HTMLInputElement>) => {
         let target = event.target as HTMLInputElement
-        
+
         let tempData: any = []
         document.querySelectorAll(`input[name=${target.name}]`).forEach((data: any) => {
             if (data.checked) {
@@ -184,7 +184,7 @@ const Transaction: FC = (): ReactElement => {
         // dispatch(getTransactions(count > transactions.length ? count + transactions.length : 100, sortBy))
     }
 
-    
+
 
 
     // Submit create transaction form
@@ -216,7 +216,7 @@ const Transaction: FC = (): ReactElement => {
                                 quantity: 0
                             }
                         )
-                        if(response.status === 201){
+                        if (response.status === 201) {
                             dispatch(setTransactions([response.data, ...transactions]));
                         }
                     })
@@ -265,7 +265,7 @@ const Transaction: FC = (): ReactElement => {
                                 quantity: 0
                             }
                         )
-                        if(response.status === 200){
+                        if (response.status === 200) {
                             dispatch(setTransactions(transactions.map((transaction) => {
                                 if (transaction.transaction_id === updateTransactionData?.transaction_id) {
                                     return {
@@ -274,14 +274,14 @@ const Transaction: FC = (): ReactElement => {
                                         airport_id: updateTransactionData.airport_id,
                                         aircraft_id: updateTransactionData.aircraft_id,
                                         quantity: updateTransactionData.quantity
-    
+
                                     }
                                 } else {
                                     return transaction
                                 }
                             })));
                         }
-                        
+
 
                     })
                     .catch(function (error) {
@@ -305,7 +305,7 @@ const Transaction: FC = (): ReactElement => {
                 console.log(response);
                 dispatch(setToasts("Transaction deleted successfully.", true, 'SUCCESS'))
                 dispatch(setDeleteTransactionFormHidden(true))
-                if(response.status === 204){
+                if (response.status === 204) {
                     dispatch(setTransactions(transactions.filter((transaction) => {
                         if (transaction.transaction_id !== transaction_id) {
                             return true
@@ -314,14 +314,14 @@ const Transaction: FC = (): ReactElement => {
                         }
                     })));
                 }
-                
+
             })
             .catch(function (error) {
                 console.log(error);
                 dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
-    event.preventDefault();
-        
+        event.preventDefault();
+
     }
 
     // Handle refresh function
@@ -403,7 +403,7 @@ const Transaction: FC = (): ReactElement => {
 
     useEffect(() => {
         dispatch(setHomeTab('TRANSACTION'))
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [])
 
 
@@ -663,7 +663,7 @@ const Transaction: FC = (): ReactElement => {
                     <RefreshBlack /> Refresh
                 </button>
             </div>
-            <div className="container-fluid" style={{ }}>
+            <div className="container-fluid" style={{}}>
                 <div className="row">
 
                     <div className="col-md-2">
@@ -679,49 +679,132 @@ const Transaction: FC = (): ReactElement => {
                             </div>
                         </button>
                         <div style={{
-                            backgroundColor: "#b0bec5"
+                            backgroundColor: "#b0bec5",
+                            display: "flex",
+                            flexDirection: "column",
+                            textAlign: "center",
+                            alignItems: "center",
+                            padding: "5px"
                         }}>
-                                    {
-                                        filterFormData.filterAirportId.length === 0?
-                                        null :
+                            {
+                                filterFormData.filterAirportId.length === 0 ?
+                                    null :
                                     <label>Airports</label>
-                                    }
-                                    {filterFormData.filterAirportId.map((airportId: string)=>{
-                                        return <div key={airportId} style={{
-                                            // padding: "10px",
-                                            backgroundColor: "#f5f5f5"
+                            }
+                            {filterFormData.filterAirportId.map((airportId: string) => {
+                                return <div key={airportId} style={{
+                                    backgroundColor: "#f5f5f5",
+                                    width: "100%",
+                                    margin: "5px",
+                                    borderRadius: "10px",
+                                    padding: "10px",
+                                    display: "flex"
 
-                                        }}>{
-                                            airports.find((airport)=>{
+                                }}>
+                                    <div style={{
+                                        width: "100%",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        display: "inline-block"
+                                    }}>{
+                                        airports.find((airport) => {
                                             return airportId === airport.airport_id
                                         })?.airport_name
-                                        }
-                                        </div> 
-                                    })}
-                                    {
-                                        filterFormData.filterAircraftId.length === 0?
-                                        null :
-                                    <label>Aircrafts</label>
-                                    }
-                                    {filterFormData.filterAircraftId.map((aircraftId: string)=>{
-                                        return <div key={aircraftId} style={{
-                                            // padding: "10px",
-                                            backgroundColor: "#f5f5f5"
-                                        }}>{aircraftId}</div>
-                                    })}
-                                    {
-                                        filterFormData.filterTransactionType.length === 0?
-                                        null :
-                                    <label>Transaction Type</label>
-                                    }  
-                                    {filterFormData.filterTransactionType.map((transactionId: string)=>{
-                                        return <div key={transactionId} style={{
-                                            // padding: "10px",
-                                            backgroundColor: "#f5f5f5"
-                                        }}>{transactionId}</div>
-                                    })}
-                                    
+                                    }</div>
+                                    <button onClick={()=>{
+                                        setFilterFormData({...filterFormData, 
+                                            filterAirportId: filterFormData.filterAirportId.filter((data: any)=>data!==airportId)
+                                        })
+                                    }} style={{
+                                        display: "inline",
+                                        border: "none",
+                                        backgroundColor: "#f5f5f5"
+                                        }}>
+                                        X
+                                    </button>
                                 </div>
+                            })}
+                            {
+                                filterFormData.filterAircraftId.length === 0 ?
+                                    null :
+                                    <label>Aircrafts</label>
+                            }
+                       
+                            {filterFormData.filterAircraftId.map((aircraftId: string) => {
+                                return <div key={aircraftId} style={{
+                                    backgroundColor: "#f5f5f5",
+                                    width: "100%",
+                                    margin: "5px",
+                                    borderRadius: "10px",
+                                    padding: "10px",
+                                    display: "flex"
+                                }}>
+                                    <div style={{
+                                        width: "100%",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        display: "inline-block"
+                                    }}>
+                                    {
+                                    aircrafts.find((aircraft) => {
+                                            return aircraftId === aircraft.aircraft_id
+                                        })?.aircraft_no
+                                    }
+                                    </div>
+                                    <button onClick={()=>{
+                                        setFilterFormData({...filterFormData, 
+                                            filterAircraftId: filterFormData.filterAircraftId.filter((data: any)=>data!==aircraftId)
+                                        })
+                                    }} style={{
+                                        display: "inline",
+                                        border: "none",
+                                        backgroundColor: "#f5f5f5"
+                                        }}>
+                                        X
+                                    </button>
+                                </div>
+                            })}
+
+                            {
+                                filterFormData.filterTransactionType.length === 0 ?
+                                    null :
+                                    <label>Transaction Type</label>
+                            }
+                            {filterFormData.filterTransactionType.map((transactionType: string) => {
+                                return <div key={transactionType} style={{
+                                    backgroundColor: "#f5f5f5",
+                                    width: "100%",
+                                    margin: "5px",
+                                    borderRadius: "10px",
+                                    padding: "10px",
+                                    display: "flex"
+                                }}>
+                                    <div style={{
+                                        width: "100%",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        display: "inline-block"
+                                    }}>
+                                    {transactionType}
+                                    </div>
+                                    <button onClick={()=>{
+                                        setFilterFormData({...filterFormData, 
+                                            filterTransactionType: filterFormData.filterTransactionType.filter((data: any)=>data!==transactionType)
+                                        })
+                                    }} style={{
+                                        display: "inline",
+                                        border: "none",
+                                        backgroundColor: "#f5f5f5"
+                                        }}>
+                                        X
+                                    </button>
+                                    </div>
+                            })}
+
+                        </div>
                         <div className="no-mobile no-print" style={{
                             height: "100%",
                             width: "100%",
@@ -738,13 +821,13 @@ const Transaction: FC = (): ReactElement => {
                                 width: "100%",
                                 padding: "5px"
                             }} >
-                                
+
                                 <div style={{
                                     display: "flex",
                                     flexDirection: "column",
                                     height: "100%"
                                 }}>
-                                     <div onClick={() => { filterByTab ==="AIRPORT"?setFilterByTab("") : setFilterByTab("AIRPORT") }}
+                                    <div onClick={() => { filterByTab === "AIRPORT" ? setFilterByTab("") : setFilterByTab("AIRPORT") }}
                                         style={{
                                             backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : "",
                                             borderStyle: "solid",
@@ -754,11 +837,11 @@ const Transaction: FC = (): ReactElement => {
                                         <label><strong>Airport</strong></label>
                                     </div>
                                     <div style={{
-                                            display: filterByTab === "AIRPORT" ? "block" : "none",
-                                            width: "100%"
-                                        }}>
-                                            <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ width: "100%" }} placeholder="Search airport" />
-                                        </div>
+                                        display: filterByTab === "AIRPORT" ? "block" : "none",
+                                        width: "100%"
+                                    }}>
+                                        <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ width: "100%" }} placeholder="Search airport" />
+                                    </div>
                                     <div style={{
                                         width: "100%",
                                         height: "100%",
@@ -767,7 +850,7 @@ const Transaction: FC = (): ReactElement => {
                                         flexDirection: "column",
                                         backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : ""
                                     }}>
-                                        
+
                                         <div className="container-fluid g-0" style={{
                                             height: "100%",
                                             width: "100%",
@@ -785,8 +868,10 @@ const Transaction: FC = (): ReactElement => {
                                                             justifyContent: "center",
                                                             borderStyle: "groove",
                                                             borderWidth: "2px 0px 2px 0px"
-                                                            }}>
-                                                            <input name="filterAirportId" onChange={handleFilterFormChangeRadioButton} className="col-2 align-self-center" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
+                                                        }}>
+                                                            <input name="filterAirportId" 
+                                                            checked={filterFormData.filterAirportId.find((data:any)=>data===airport.airport_id)}
+                                                             onChange={handleFilterFormChangeRadioButton} className="col-2 align-self-center" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
                                                             <label className="col-10" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
                                                                 {airport.airport_name}
                                                             </label>
@@ -797,7 +882,7 @@ const Transaction: FC = (): ReactElement => {
                                             }
                                         </div>
                                     </div>
-                                    <div onClick={() => { filterByTab ==="AIRCRAFT"?setFilterByTab("") : setFilterByTab("AIRCRAFT") }}
+                                    <div onClick={() => { filterByTab === "AIRCRAFT" ? setFilterByTab("") : setFilterByTab("AIRCRAFT") }}
                                         style={{
                                             backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : "",
                                             borderStyle: "solid",
@@ -809,10 +894,10 @@ const Transaction: FC = (): ReactElement => {
                                             display: filterByTab === "AIRCRAFT" ? "block" : "none",
                                             width: "100%"
                                         }}>
-                                            <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ width: "100%"}} placeholder="Search aircraft" />
+                                            <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ width: "100%" }} placeholder="Search aircraft" />
                                         </div>
                                     </div>
-                                   
+
                                     <div style={{
                                         width: "100%",
                                         height: "100%",
@@ -822,7 +907,7 @@ const Transaction: FC = (): ReactElement => {
                                         backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : ""
                                     }}
                                     >
-                                       
+
                                         <div style={{
                                             height: "100vh",
                                             width: "fit-content",
@@ -836,7 +921,9 @@ const Transaction: FC = (): ReactElement => {
                                                 }).map((aircraft) => {
                                                     return (
                                                         <div className="form-check" key={aircraft.aircraft_id.toString()} style={{ margin: "5px" }}>
-                                                            <input name="filterAircraftId" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
+                                                            <input name="filterAircraftId"
+                                                            checked={filterFormData.filterAircraftId.find((data:any)=>data===aircraft.aircraft_id)}
+                                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
                                                             <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
                                                                 {aircraft.aircraft_no}
                                                             </label>
@@ -847,7 +934,7 @@ const Transaction: FC = (): ReactElement => {
                                             }
                                         </div>
                                     </div>
-                                    <div onClick={() => { filterByTab ==="TRANSACTION_TYPE"?setFilterByTab("") : setFilterByTab("TRANSACTION_TYPE")  }}
+                                    <div onClick={() => { filterByTab === "TRANSACTION_TYPE" ? setFilterByTab("") : setFilterByTab("TRANSACTION_TYPE") }}
                                         style={{
                                             backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
                                             borderStyle: "solid",
@@ -865,13 +952,17 @@ const Transaction: FC = (): ReactElement => {
                                         flexDirection: "column"
                                     }}>
                                         <div className="form-check" style={{ width: "fit-content" }}>
-                                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
+                                            <input name="filterTransactionType"
+                                            checked={filterFormData.filterTransactionType.find((data:any)=>data==="IN")}
+                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
                                             <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
                                                 IN
                                             </label>
                                         </div>
                                         <div className="form-check" style={{ width: "fit-content" }}>
-                                            <input name="filterTransactionType" onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
+                                            <input name="filterTransactionType"
+                                            checked={filterFormData.filterTransactionType.find((data:any)=>data==="OUT")}
+                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
                                             <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
                                                 OUT
                                             </label>
@@ -883,7 +974,7 @@ const Transaction: FC = (): ReactElement => {
                     </div>
                     <div className="col-md-10 container-fluid">
                         <div className="row">
-                            <div className="col container" style={{ maxWidth: "100%", minWidth: "80%"}} >
+                            <div className="col container" style={{ maxWidth: "100%", minWidth: "80%" }} >
                                 <div className="row justify-content-between" style={{
                                     backgroundColor: "#1a237e", color: "#ffffff",
                                     alignItems: "center"
@@ -923,7 +1014,7 @@ const Transaction: FC = (): ReactElement => {
                                 </div>
                                 {
                                     transactions
-                                       
+
                                         ?.slice(0, count).map((transaction, transactionIndex) => {
                                             return (
                                                 <div className="row justify-content-between" key={transaction.transaction_id} onClick={() => { handleSelectedTransaction(transaction) }} id={`row${transaction.transaction_id}`} style={{
@@ -1021,7 +1112,7 @@ const Transaction: FC = (): ReactElement => {
 
                             </div>
                             {/* <div className="col" style={{ maxWidth: "20%"}}> */}
-                                <TransactionSideBar />
+                            <TransactionSideBar />
                             {/* </div> */}
                         </div>
                     </div>

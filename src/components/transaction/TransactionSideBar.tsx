@@ -12,7 +12,6 @@ const TransactionSideBar: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
-
     // retrive selected transaction data from redux
     const selectedTransactionID = useSelector((state: state) => { return state.selectedTransaction.transaction_id });
 

@@ -15,7 +15,9 @@ const airports = useSelector((state: state) => { return state.airports!.data });
 
 
     return (
-        <div style={{padding: "10px"}}>
+        <div style={{
+            // padding: "10px"
+            }}>
         <div className="shadow-lg p-3 mb-5 bg-body rounded" style={{
             display: "flex",
             flexDirection: "row",
@@ -29,7 +31,10 @@ const airports = useSelector((state: state) => { return state.airports!.data });
 
         }}>
             {
-                airports?.map((airport) => {
+                airports?.filter((airport)=>{
+                    const fuelAvailablePercent = (Number(airport.fuel_available)/Number(airport.fuel_capacity))*100
+                    return  fuelAvailablePercent <= 20 || fuelAvailablePercent>=80
+                }).map((airport) => {
                     return (
                         <div key={airport.airport_id.toString()} className="card" style={{ width: "18rem", margin: "5px" }}>
                             <div className="card-body">

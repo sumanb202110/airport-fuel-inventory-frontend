@@ -115,7 +115,7 @@ export const getTransactionsReport = ()=> async (dispatch: Dispatch<any>) => {
         )
     } catch (error: any) {
         console.log(error)
-        dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
+        dispatch(setToasts(error?.response?.data?.msg, true, 'ERROR'))
     }
 };
 
