@@ -17,8 +17,11 @@ import HomeReportAirportGTE80 from "./HomeReportAirportGTE80";
 
 const Home: FC = (): ReactElement => {
 
+    // Transaction reports
+    const transactionReport = useSelector((state: state) => { return state.transactions?.report });
+
     // retrive transactions data from redux
-    const transactions = useSelector((state: state) => { return state.transactions!.data });
+    const transactions = transactionReport?.mostRecent100Transactions
 
     // Dashboard chart type
     const [dashboardChartType, setDashboardChartType] = useState("REPORT_LINE_CHART")
@@ -80,9 +83,9 @@ const Home: FC = (): ReactElement => {
                 }} >
                     <div>
 
-                        <div style={{ 
+                        <div style={{
                             // padding: "10px" 
-                            }}>
+                        }}>
                             <div className="shadow-lg p-3 mb-4 bg-body rounded" style={{ width: "100%", height: "fit-content" }}>
                                 <div className='header'>
                                     <ul className="nav nav-pills nav-fill">
@@ -102,40 +105,45 @@ const Home: FC = (): ReactElement => {
                                     {/* <h1 className='title'>Report</h1> */}
                                     <div className='links'>
                                     </div>
-                                </div >
-                                {
-                                    dashboardChartType === "REPORT_LINE_CHART" ?
-                                        <div className="chart-container" >
-                                            <HomeLineChart airports={airports} transactions={transactions} />
-                                        </div>
+                                </div>
+                                <div style={{
+                                    maxHeight: "40rem",
+                                    minHeight: "20rem"
+                                }}>
+                                    {
+                                        dashboardChartType === "REPORT_LINE_CHART" ?
+                                            <div className="chart-container" >
+                                                <HomeLineChart airports={airports} transactions={transactions} />
+                                            </div>
 
-                                        :
-                                        null
-                                }
-                                {
-                                    dashboardChartType === "COMPARE_BAR_CHART" ?
-                                    <div >
-                                        <HomeBarChart />
-                                    </div>
-                                        :
-                                        null
-                                }
-                                {
-                                    dashboardChartType === "AIRPORT_REPORT_LTE20" ?
-                                    <div >
-                                        <HomeReportAirportLTE20 />
-                                    </div>
-                                        :
-                                        null
-                                }
-                                {
-                                    dashboardChartType === "AIRPORT_REPORT_GTE80" ?
-                                    <div >
-                                        <HomeReportAirportGTE80 />
-                                    </div>
-                                        :
-                                        null
-                                }
+                                            :
+                                            null
+                                    }
+                                    {
+                                        dashboardChartType === "COMPARE_BAR_CHART" ?
+                                            <div >
+                                                <HomeBarChart />
+                                            </div>
+                                            :
+                                            null
+                                    }
+                                    {
+                                        dashboardChartType === "AIRPORT_REPORT_LTE20" ?
+                                            <div >
+                                                <HomeReportAirportLTE20 />
+                                            </div>
+                                            :
+                                            null
+                                    }
+                                    {
+                                        dashboardChartType === "AIRPORT_REPORT_GTE80" ?
+                                            <div >
+                                                <HomeReportAirportGTE80 />
+                                            </div>
+                                            :
+                                            null
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>

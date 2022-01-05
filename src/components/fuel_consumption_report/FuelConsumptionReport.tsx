@@ -1,10 +1,10 @@
 // import axios from "axios";
 import { FC, ReactElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAircrafts, getAirports, getTransactions, setHomeTab, setToasts } from "../../actions";
+import { getAircrafts, getAirports, getTransactions, getTransactionsReport, setHomeTab, setToasts } from "../../actions";
 import { state } from "../../App";
 // import { airports } from "../airport/Airport";
-import { transaction } from "../transaction/transaction";
+import { transaction, transactions } from "../transaction/transaction";
 import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.svg'
 import { ReactComponent as ExpandLessBlack } from '../../svgs/expand_less_black_24dp.svg'
 import { ReactComponent as ExpandMoreBlack } from '../../svgs/expand_more_black_24dp.svg'
@@ -41,8 +41,12 @@ const FuelConsumptionReport: FC = (): ReactElement => {
 
     const dispatch = useDispatch()
 
+    // Transaction reports
+    const transactionReport = useSelector((state: state) => { return state.transactions?.report });
+
     // retrive transactions data from redux
-    const transactions = useSelector((state: state) => { return state.transactions!.data });
+    // const transactions = useSelector((state: state) => { return state.transactions!.data });
+    const transactions = transactionReport.mostRecent100Transactions as transactions
 
     // retrive airports data from redux
     const airports = useSelector((state: state) => { return state.airports!.data });
@@ -107,7 +111,8 @@ const FuelConsumptionReport: FC = (): ReactElement => {
     const handleRefresh = () => {
         dispatch(getAirports());
         dispatch(getAircrafts());
-        dispatch(getTransactions(100));
+        // dispatch(getTransactions(100));
+        dispatch(getTransactionsReport())
     }
 
    
@@ -232,6 +237,11 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                         </div>
                                         {/* <hr /> */}
                                     </div>
+                                    <div style={{
+                                        overflow: "auto",
+                                        maxHeight: "50vh",
+                                        width: "100%"
+                                    }}>
                                     {
                                         transactions?.filter((transaction) => transaction.airport_id === airport.airport_id)?.sort(function (a, b) {
                                             const currentSortBy = sortBy?.filter((data) => data.airport_id === airport.airport_id)[0]
@@ -279,7 +289,11 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                             }
                                         }).map((transaction, transactionIndex) => {
                                             return (
-                                                <div className="row justify-content-around" key={transaction.transaction_id} style={{ alignItems: "center", backgroundColor: `${transactionIndex % 2 !== 0 ? "#eeeeee" : ""}` }}>
+                                                <div className="row justify-content-around" key={transaction.transaction_id} style={{ 
+                                                    alignItems: "center",
+                                                    width: "100%",
+                                                    backgroundColor: `${transactionIndex % 2 !== 0 ? "#eeeeee" : ""}` 
+                                                     }}>
                                                     <div className="col-2">
                                                         {new Date(transaction.transaction_date_time)
                                                             .toLocaleString("en-US", { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
@@ -311,6 +325,7 @@ const FuelConsumptionReport: FC = (): ReactElement => {
                                             )
                                         })
                                     }
+                                    </div>
                                     <p>Fuel Available: {airport.fuel_available}</p>
                                     </>
                                     :

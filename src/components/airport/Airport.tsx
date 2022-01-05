@@ -94,8 +94,11 @@ const Airport: FC = (): ReactElement => {
     // Submit form to create airport handle function
     const handleCreateAirportFormSubmit = (event: React.FormEvent) => {
         console.log(createAirportData)
-
-        if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
+        if (createAirportData.airport_id === "") {
+            setCreateAirportError("Airport Id can't be blank.")
+        } else if (createAirportData.airport_name === "") {
+            setCreateAirportError("Airport name can't be blank")
+        } else if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
             setCreateAirportError("Fuel available can not be greater then fuel capacity")
         } else if (Number(createAirportData.fuel_available) < 0) {
             setCreateAirportError("Fuel available can not be less then 0")
@@ -159,7 +162,7 @@ const Airport: FC = (): ReactElement => {
                             if (airport.airport_id === updateAirportData?.airport_id) {
                                 return {
                                     ...airport,
-                                    airport_id: updateAirportData.airport_id ,
+                                    airport_id: updateAirportData.airport_id,
                                     airport_name: updateAirportData.airport_name,
                                     fuel_capacity: updateAirportData.fuel_capacity,
                                     fuel_available: updateAirportData.fuel_available
@@ -187,7 +190,7 @@ const Airport: FC = (): ReactElement => {
                 console.log(response);
                 dispatch(setToasts("Deleted successfully", true, 'SUCCESS'))
                 setDeleteAirportFormHidden(true)
-                if(response.status === 204){
+                if (response.status === 204) {
                     dispatch(setAirports(airports.filter((airport) => {
                         if (airport.airport_id !== airport_id) {
                             return true
@@ -201,7 +204,7 @@ const Airport: FC = (): ReactElement => {
                 console.log(error);
                 dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
             });
-            event.preventDefault();
+        event.preventDefault();
     }
 
     // Handle refresh function
@@ -224,7 +227,11 @@ const Airport: FC = (): ReactElement => {
 
     // On create form data change
     useEffect(() => {
-        if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
+        if (createAirportData.airport_id === "") {
+            setCreateAirportError("Airport Id can't be blank.")
+        } else if (createAirportData.airport_name === "") {
+            setCreateAirportError("Airport name can't be blank")
+        } else if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
             setCreateAirportError("Fuel available can not be greater then fuel capacity")
         } else if (Number(createAirportData.fuel_available) < 0) {
             setCreateAirportError("Fuel available can not be less then 0")
@@ -246,10 +253,6 @@ const Airport: FC = (): ReactElement => {
 
     return (
         <div>
-            <br />
-            <button type="submit" onClick={() => { setCreateAirportFormHidden(false) }} className="btn btn-primary no-print">Create new Airport</button>
-            <br />
-
             <div className={`modal ${createAirportFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAirportFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
@@ -269,25 +272,25 @@ const Airport: FC = (): ReactElement => {
                                             <label className="form-check-label" htmlFor="airport_id">
                                                 Airport Id
                                             </label>
-                                            <input onChange={handleCreateAirportFormChange} name="airport_id" type="text" id="airport_id" className="form-control" placeholder="Airport Id" />
+                                            <input onChange={handleCreateAirportFormChange}  value="" name="airport_id" type="text" id="airport_id" className="form-control" placeholder="Airport Id" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="airport_name">
                                                 Airport Name
                                             </label>
-                                            <input onChange={handleCreateAirportFormChange} name="airport_name" type="text" id="airport_name" className="form-control" placeholder="Airport Name" />
+                                            <input onChange={handleCreateAirportFormChange} value="" name="airport_name" type="text" id="airport_name" className="form-control" placeholder="Airport Name" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="fuel_capacity">
                                                 Fuel Capacity(L)
                                             </label>
-                                            <input onChange={handleCreateAirportFormChange} name="fuel_capacity" type="number" min={0} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
+                                            <input value={0} onChange={handleCreateAirportFormChange} name="fuel_capacity" type="number" min={0} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-check-label" htmlFor="fuel_available">
                                                 Fuel Available(L)
                                             </label>
-                                            <input onChange={handleCreateAirportFormChange} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
+                                            <input value={0} onChange={handleCreateAirportFormChange} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
                                         </div>
                                         <span style={{ color: "#e53935" }}>
                                             {createAirportError}
@@ -298,7 +301,7 @@ const Airport: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setCreateAirportFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Submit</button>
+                                <button disabled={createAirportError === "" ? false : true} type="submit" className="btn btn-primary">Submit</button>
 
                             </div>
                         </form>
@@ -355,7 +358,7 @@ const Airport: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setUpdateAirportFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Update</button>
+                                <button disabled={updateAirportError === "" ? false : true} type="submit" className="btn btn-primary">Update</button>
 
                             </div>
                         </form>
@@ -420,20 +423,25 @@ const Airport: FC = (): ReactElement => {
             </div>
             <br />
 
-            <div style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
-                <select name="sortBy" style={{ width: "15rem" }} onChange={handleSort} id="sortBySelect" className="form-select no-print">
-                    <option value="NAME_A_Z">Sort by Name A to Z</option>
-                    <option value="NAME_Z_A">Sort by Name Z to A</option>
-                    <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>
-                    <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
-                </select>
-                <span style={{ width: "10px" }}>
-                </span>
-                <button onClick={handleRefresh} className="btn btn-outline-info" >
-                    <RefreshBlack /> Refresh
-                </button>
-            </div>
+
             <div className="container">
+                <div style={{ display: "flex", justifyContent: "space-between", margin: "5px" }}>
+
+                    <button type="submit" onClick={() => { setCreateAirportFormHidden(false) }} className="btn btn-primary no-print">Create new Airport</button>
+                    <span style={{ display: "flex" }}>
+                        <select name="sortBy" style={{ maxWidth: "15rem" }} onChange={handleSort} id="sortBySelect" className="form-select no-print">
+                            <option value="NAME_A_Z">Sort by Name A to Z</option>
+                            <option value="NAME_Z_A">Sort by Name Z to A</option>
+                            <option value="FUEL_CAPACITY_HIGH_LOW">Sort by capacity high to low</option>
+                            <option value="FUEL_CAPACITY_LOW_HIGH">Sort by capacity low to high</option>
+                        </select>
+                        <span style={{ width: "10px" }}>
+                        </span>
+                        <button onClick={handleRefresh} className="btn btn-outline-info" >
+                            <RefreshBlack /> Refresh
+                        </button>
+                    </span>
+                </div>
                 <div className="row" style={{
                     alignItems: "center",
                     backgroundColor: "#1a237e",

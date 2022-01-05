@@ -56,7 +56,7 @@ const Signup: FC = (): ReactElement => {
     useEffect(()=>{
         if (!validatePassword(signupFormData.password)) {
             dispatch(setToasts(`Password must be of length 8 to 30 which contains one digit, one uppercase alphabet, one lower case alphabet,
-             one special character which includes !@#$%&*()-+=^ and doesn’t contain any white space`, true, 'ERROR'))
+             one special character which includes !@#$%&*()-+=^ and does not contain any white space`, true, 'ERROR'))
         }else{
             dispatch(setToasts("", false, 'SUCCESS'))
         }

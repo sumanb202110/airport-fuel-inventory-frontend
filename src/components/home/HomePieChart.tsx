@@ -34,7 +34,7 @@ const airports = useSelector((state: state) => { return state.airports!.data });
                 airports?.filter((airport)=>{
                     const fuelAvailablePercent = (Number(airport.fuel_available)/Number(airport.fuel_capacity))*100
                     return  fuelAvailablePercent <= 20 || fuelAvailablePercent>=80
-                }).map((airport) => {
+                }).slice(0,6).map((airport) => {
                     return (
                         <div key={airport.airport_id.toString()} className="card" style={{ width: "18rem", margin: "5px" }}>
                             <div className="card-body">

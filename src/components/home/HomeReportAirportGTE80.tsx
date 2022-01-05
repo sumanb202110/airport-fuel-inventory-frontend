@@ -28,7 +28,7 @@ const HomeReportAirportGTE80: FC = (): ReactElement => {
            </div>
        {
            
-           airportsReport?.airportGTE80?.map((report: any)=>{
+           airportsReport?.airportGTE80?.slice(0, 5).map((report: any)=>{
                return(
             <div className="row border-bottom" key={report.airport_id}>
                 <div className="col">{report.airport_id}</div>

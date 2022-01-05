@@ -225,9 +225,7 @@ const Aircraft: FC = (): ReactElement => {
     }, [])
     return (
         <div>
-            <br />
-            <button type="submit" onClick={() => { setCreateAircraftFormHidden(false) }} className="btn btn-primary no-print">Create new Aircraft</button>
-            <br />
+            <br/>
             <div className={`modal ${createAircraftFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAircraftFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
@@ -269,7 +267,7 @@ const Aircraft: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setCreateAircraftFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Submit</button>
+                                <button disabled={createAircraftError === ""? false: true} type="submit" className="btn btn-primary">Submit</button>
 
                             </div>
                         </form>
@@ -319,7 +317,7 @@ const Aircraft: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setUpdateAircraftFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Update</button>
+                                <button disabled={updateAircraftError === ""? false: true} type="submit" className="btn btn-primary">Update</button>
 
                             </div>
                         </form>
@@ -378,12 +376,14 @@ const Aircraft: FC = (): ReactElement => {
                 </div>
 
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
+            <div className="container">
+            <div style={{ display: "flex", justifyContent: "space-between", margin: "5px" }}>
+                <button type="submit" onClick={() => { setCreateAircraftFormHidden(false) }} className="btn btn-primary no-print">Create new Aircraft</button>
+
                 <button onClick={handleRefresh} className="btn btn-outline-info" >
                     <RefreshBlack /> Refresh
                 </button>
             </div>
-            <div className="container">
                 <div className="row" style={{
                     alignItems: "center",
                     backgroundColor: "#1a237e",

@@ -412,23 +412,15 @@ const Transaction: FC = (): ReactElement => {
     return (
         <div>
             <br />
-            <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary no-print">Create new transaction</button>
-            <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px", position: "absolute" }}>Print</button>
-            <br />
-            <br />
-
-
             <div className={`modal ${createTransactionFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createTransactionFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <form onSubmit={handleCreateTransactionFormSubmit}>
                             <div className="modal-header">
                                 <button type="button" onClick={() => { setCreateTransactionFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
-
                             </div>
                             <div className="modal-body">
                                 <div>
-
                                     <fieldset >
                                         <legend>Create Transaction</legend>
                                         <div className="mb-3">
@@ -488,7 +480,7 @@ const Transaction: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { setCreateTransactionFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Submit</button>
+                                <button disabled={createTransactionError === "" ? false : true} type="submit" className="btn btn-primary">Submit</button>
 
                             </div>
                         </form>
@@ -566,7 +558,7 @@ const Transaction: FC = (): ReactElement => {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" onClick={() => { dispatch(setUpdateTransactionFormHidden(true)) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button type="submit" className="btn btn-primary">Update</button>
+                                <button disabled={updateTransactionError === "" ? false : true} type="submit" className="btn btn-primary">Update</button>
 
                             </div>
                         </form>
@@ -651,328 +643,343 @@ const Transaction: FC = (): ReactElement => {
 
             </div>
 
-            <div className="no-print" style={{ display: "flex", justifyContent: "flex-end", margin: "5px" }}>
-                <select name="sortBy" onChange={handleSort} style={{ width: "15rem" }} id="sortBySelect" className="form-select no-print">
-                    <option value="DATE_HIGH_LOW">Sort by date high to low</option>
-                    <option value="DATE_LOW_HIGH">Sort by date low to high</option>
-                    <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
-                    <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
-                </select>
-                <span style={{ width: "10px" }}></span>
-                <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
-                    <RefreshBlack /> Refresh
-                </button>
-            </div>
+
             <div className="container-fluid" style={{}}>
+
                 <div className="row">
 
-                    <div className="col-md-2">
-                        <button
-                            className="no-mobie"
-                            onClick={() => { setFilterFormHidden(!fliterFormHidden) }}
-                            style={{
-                                border: "none"
-                            }}
-                        >
-                            <div className="no-print">
-                                <FilterListBlack />
-                            </div>
-                        </button>
+                    <div className="col-md-2 no-mobile">
                         <div style={{
-                            backgroundColor: "#b0bec5",
-                            display: "flex",
-                            flexDirection: "column",
-                            textAlign: "center",
-                            alignItems: "center",
-                            padding: "5px"
+                            position: "fixed",
+                            width: "14%"
                         }}>
-                            {
-                                filterFormData.filterAirportId.length === 0 ?
-                                    null :
-                                    <label>Airports</label>
-                            }
-                            {filterFormData.filterAirportId.map((airportId: string) => {
-                                return <div key={airportId} style={{
-                                    backgroundColor: "#f5f5f5",
-                                    width: "100%",
-                                    margin: "5px",
-                                    borderRadius: "10px",
-                                    padding: "10px",
-                                    display: "flex"
-
-                                }}>
-                                    <div style={{
-                                        width: "100%",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        display: "inline-block"
-                                    }}>{
-                                        airports.find((airport) => {
-                                            return airportId === airport.airport_id
-                                        })?.airport_name
-                                    }</div>
-                                    <button onClick={()=>{
-                                        setFilterFormData({...filterFormData, 
-                                            filterAirportId: filterFormData.filterAirportId.filter((data: any)=>data!==airportId)
-                                        })
-                                    }} style={{
-                                        display: "inline",
-                                        border: "none",
-                                        backgroundColor: "#f5f5f5"
-                                        }}>
-                                        X
-                                    </button>
+                            <button
+                                className="no-mobie"
+                                onClick={() => { setFilterFormHidden(!fliterFormHidden) }}
+                                style={{
+                                    border: "none"
+                                }}
+                            >
+                                <div className="no-print">
+                                    <FilterListBlack />
                                 </div>
-                            })}
-                            {
-                                filterFormData.filterAircraftId.length === 0 ?
-                                    null :
-                                    <label>Aircrafts</label>
-                            }
-                       
-                            {filterFormData.filterAircraftId.map((aircraftId: string) => {
-                                return <div key={aircraftId} style={{
-                                    backgroundColor: "#f5f5f5",
-                                    width: "100%",
-                                    margin: "5px",
-                                    borderRadius: "10px",
-                                    padding: "10px",
-                                    display: "flex"
-                                }}>
-                                    <div style={{
-                                        width: "100%",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        display: "inline-block"
-                                    }}>
-                                    {
-                                    aircrafts.find((aircraft) => {
-                                            return aircraftId === aircraft.aircraft_id
-                                        })?.aircraft_no
-                                    }
-                                    </div>
-                                    <button onClick={()=>{
-                                        setFilterFormData({...filterFormData, 
-                                            filterAircraftId: filterFormData.filterAircraftId.filter((data: any)=>data!==aircraftId)
-                                        })
-                                    }} style={{
-                                        display: "inline",
-                                        border: "none",
-                                        backgroundColor: "#f5f5f5"
-                                        }}>
-                                        X
-                                    </button>
-                                </div>
-                            })}
-
-                            {
-                                filterFormData.filterTransactionType.length === 0 ?
-                                    null :
-                                    <label>Transaction Type</label>
-                            }
-                            {filterFormData.filterTransactionType.map((transactionType: string) => {
-                                return <div key={transactionType} style={{
-                                    backgroundColor: "#f5f5f5",
-                                    width: "100%",
-                                    margin: "5px",
-                                    borderRadius: "10px",
-                                    padding: "10px",
-                                    display: "flex"
-                                }}>
-                                    <div style={{
-                                        width: "100%",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        display: "inline-block"
-                                    }}>
-                                    {transactionType}
-                                    </div>
-                                    <button onClick={()=>{
-                                        setFilterFormData({...filterFormData, 
-                                            filterTransactionType: filterFormData.filterTransactionType.filter((data: any)=>data!==transactionType)
-                                        })
-                                    }} style={{
-                                        display: "inline",
-                                        border: "none",
-                                        backgroundColor: "#f5f5f5"
-                                        }}>
-                                        X
-                                    </button>
-                                    </div>
-                            })}
-
-                        </div>
-                        <div className="no-mobile no-print" style={{
-                            height: "100%",
-                            width: "100%",
-                            overflow: "auto",
-                            // wordWrap: "break-word",
-                            display: fliterFormHidden ? "none" : ""
-                        }}>
-                            <form style={{
+                            </button>
+                            <div style={{
                                 backgroundColor: "#b0bec5",
-                                // display: "flex",
-                                // flexDirection: "column",
-                                justifyContent: "space-around",
-                                height: "50vh",
-                                width: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                textAlign: "center",
+                                alignItems: "center",
                                 padding: "5px"
-                            }} >
-
-                                <div style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    height: "100%"
-                                }}>
-                                    <div onClick={() => { filterByTab === "AIRPORT" ? setFilterByTab("") : setFilterByTab("AIRPORT") }}
-                                        style={{
-                                            backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : "",
-                                            borderStyle: "solid",
-                                            borderWidth: "0px 0px 2px 0px"
-                                        }}
-                                    >
-                                        <label><strong>Airport</strong></label>
-                                    </div>
-                                    <div style={{
-                                        display: filterByTab === "AIRPORT" ? "block" : "none",
-                                        width: "100%"
-                                    }}>
-                                        <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ width: "100%" }} placeholder="Search airport" />
-                                    </div>
-                                    <div style={{
+                            }}>
+                                {
+                                    filterFormData.filterAirportId.length === 0 ?
+                                        null :
+                                        <label>Airports</label>
+                                }
+                                {filterFormData.filterAirportId.map((airportId: string) => {
+                                    return <div key={airportId} style={{
+                                        backgroundColor: "#f5f5f5",
                                         width: "100%",
-                                        height: "100%",
-                                        overflow: "auto",
-                                        display: filterByTab === "AIRPORT" ? "flex" : "none",
-                                        flexDirection: "column",
-                                        backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : ""
-                                    }}>
+                                        margin: "5px",
+                                        borderRadius: "10px",
+                                        padding: "10px",
+                                        display: "flex"
 
-                                        <div className="container-fluid g-0" style={{
-                                            height: "100%",
+                                    }}>
+                                        <div style={{
                                             width: "100%",
-                                            display: filterByTab === "AIRPORT" ? "flex" : "none",
-                                            flexDirection: "column"
-                                            // wordWrap: "break-word"
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            display: "inline-block"
+                                        }}>{
+                                                airports.find((airport) => {
+                                                    return airportId === airport.airport_id
+                                                })?.airport_name
+                                            }</div>
+                                        <button onClick={() => {
+                                            setFilterFormData({
+                                                ...filterFormData,
+                                                filterAirportId: filterFormData.filterAirportId.filter((data: any) => data !== airportId)
+                                            })
+                                        }} style={{
+                                            display: "inline",
+                                            border: "none",
+                                            backgroundColor: "#f5f5f5"
+                                        }}>
+                                            X
+                                        </button>
+                                    </div>
+                                })}
+                                {
+                                    filterFormData.filterAircraftId.length === 0 ?
+                                        null :
+                                        <label>Aircrafts</label>
+                                }
+
+                                {filterFormData.filterAircraftId.map((aircraftId: string) => {
+                                    return <div key={aircraftId} style={{
+                                        backgroundColor: "#f5f5f5",
+                                        width: "100%",
+                                        margin: "5px",
+                                        borderRadius: "10px",
+                                        padding: "10px",
+                                        display: "flex"
+                                    }}>
+                                        <div style={{
+                                            width: "100%",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            display: "inline-block"
                                         }}>
                                             {
-                                                airports?.filter((airport) => {
-                                                    return airport.airport_name.toUpperCase().includes(filterSearchAirportName.toUpperCase())
-                                                }).map((airport) => {
-                                                    return (
-                                                        <div className="row align-self-center" key={airport.airport_id.toString()} style={{
-                                                            width: "100%",
-                                                            justifyContent: "center",
-                                                            borderStyle: "groove",
-                                                            borderWidth: "2px 0px 2px 0px"
-                                                        }}>
-                                                            <input name="filterAirportId" 
-                                                            checked={filterFormData.filterAirportId.find((data:any)=>data===airport.airport_id)}
-                                                             onChange={handleFilterFormChangeRadioButton} className="col-2 align-self-center" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
-                                                            <label className="col-10" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
-                                                                {airport.airport_name}
-                                                            </label>
-                                                        </div>
-
-                                                    )
-                                                })
+                                                aircrafts.find((aircraft) => {
+                                                    return aircraftId === aircraft.aircraft_id
+                                                })?.aircraft_no
                                             }
                                         </div>
+                                        <button onClick={() => {
+                                            setFilterFormData({
+                                                ...filterFormData,
+                                                filterAircraftId: filterFormData.filterAircraftId.filter((data: any) => data !== aircraftId)
+                                            })
+                                        }} style={{
+                                            display: "inline",
+                                            border: "none",
+                                            backgroundColor: "#f5f5f5"
+                                        }}>
+                                            X
+                                        </button>
                                     </div>
-                                    <div onClick={() => { filterByTab === "AIRCRAFT" ? setFilterByTab("") : setFilterByTab("AIRCRAFT") }}
-                                        style={{
-                                            backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : "",
-                                            borderStyle: "solid",
-                                            borderWidth: "0px 0px 2px 0px"
-                                        }}
-                                    >
-                                        <label><strong>Aircraft</strong></label>
+                                })}
+
+                                {
+                                    filterFormData.filterTransactionType.length === 0 ?
+                                        null :
+                                        <label>Transaction Type</label>
+                                }
+                                {filterFormData.filterTransactionType.map((transactionType: string) => {
+                                    return <div key={transactionType} style={{
+                                        backgroundColor: "#f5f5f5",
+                                        width: "100%",
+                                        margin: "5px",
+                                        borderRadius: "10px",
+                                        padding: "10px",
+                                        display: "flex"
+                                    }}>
                                         <div style={{
-                                            display: filterByTab === "AIRCRAFT" ? "block" : "none",
+                                            width: "100%",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            display: "inline-block"
+                                        }}>
+                                            {transactionType}
+                                        </div>
+                                        <button onClick={() => {
+                                            setFilterFormData({
+                                                ...filterFormData,
+                                                filterTransactionType: filterFormData.filterTransactionType.filter((data: any) => data !== transactionType)
+                                            })
+                                        }} style={{
+                                            display: "inline",
+                                            border: "none",
+                                            backgroundColor: "#f5f5f5"
+                                        }}>
+                                            X
+                                        </button>
+                                    </div>
+                                })}
+
+                            </div>
+                            <div className="no-mobile no-print" style={{
+                                height: "100%",
+                                width: "100%",
+                                overflow: "auto",
+                                // wordWrap: "break-word",
+                                display: fliterFormHidden ? "none" : ""
+                            }}>
+                                <form style={{
+                                    backgroundColor: "#b0bec5",
+                                    // display: "flex",
+                                    // flexDirection: "column",
+                                    justifyContent: "space-around",
+                                    height: "50vh",
+                                    width: "100%",
+                                    padding: "5px"
+                                }} >
+
+                                    <div style={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        height: "100%"
+                                    }}>
+                                        <div onClick={() => { filterByTab === "AIRPORT" ? setFilterByTab("") : setFilterByTab("AIRPORT") }}
+                                            style={{
+                                                backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : "",
+                                                borderStyle: "solid",
+                                                borderWidth: "0px 0px 2px 0px"
+                                            }}
+                                        >
+                                            <label><strong>Airport</strong></label>
+                                        </div>
+                                        <div style={{
+                                            display: filterByTab === "AIRPORT" ? "block" : "none",
                                             width: "100%"
                                         }}>
-                                            <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ width: "100%" }} placeholder="Search aircraft" />
+                                            <input type="text" onChange={handleFilterAirportSearchChange} ref={filterAirportSearchInput} style={{ width: "100%" }} placeholder="Search airport" />
                                         </div>
-                                    </div>
+                                        <div style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            overflow: "auto",
+                                            display: filterByTab === "AIRPORT" ? "flex" : "none",
+                                            flexDirection: "column",
+                                            backgroundColor: filterByTab === "AIRPORT" ? "#f5f5f5" : ""
+                                        }}>
 
-                                    <div style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        overflowX: "auto",
-                                        display: filterByTab === "AIRCRAFT" ? "flex" : "none",
-                                        flexDirection: "column",
-                                        backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : ""
-                                    }}
-                                    >
+                                            <div className="container-fluid g-0" style={{
+                                                height: "100%",
+                                                width: "100%",
+                                                display: filterByTab === "AIRPORT" ? "flex" : "none",
+                                                flexDirection: "column"
+                                                // wordWrap: "break-word"
+                                            }}>
+                                                {
+                                                    airports?.filter((airport) => {
+                                                        return airport.airport_name.toUpperCase().includes(filterSearchAirportName.toUpperCase())
+                                                    }).map((airport) => {
+                                                        return (
+                                                            <div className="row align-self-center" key={airport.airport_id.toString()} style={{
+                                                                width: "100%",
+                                                                justifyContent: "center",
+                                                                borderStyle: "groove",
+                                                                borderWidth: "2px 0px 2px 0px"
+                                                            }}>
+                                                                <input name="filterAirportId"
+                                                                    checked={filterFormData.filterAirportId.find((data: any) => data === airport.airport_id)}
+                                                                    onChange={handleFilterFormChangeRadioButton} className="col-2 align-self-center" type="checkbox" value={airport.airport_id.toString()} id={`airportFilterCheckbox${airport.airport_id}`} />
+                                                                <label className="col-10" htmlFor={`airportFilterCheckbox${airport.airport_id}`}>
+                                                                    {airport.airport_name}
+                                                                </label>
+                                                            </div>
+
+                                                        )
+                                                    })
+                                                }
+                                            </div>
+                                        </div>
+                                        <div onClick={() => { filterByTab === "AIRCRAFT" ? setFilterByTab("") : setFilterByTab("AIRCRAFT") }}
+                                            style={{
+                                                backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : "",
+                                                borderStyle: "solid",
+                                                borderWidth: "0px 0px 2px 0px"
+                                            }}
+                                        >
+                                            <label><strong>Aircraft</strong></label>
+                                            <div style={{
+                                                display: filterByTab === "AIRCRAFT" ? "block" : "none",
+                                                width: "100%"
+                                            }}>
+                                                <input type="text" onChange={handleFilterAircraftSearchChange} ref={filterAircraftSearchInput} style={{ width: "100%" }} placeholder="Search aircraft" />
+                                            </div>
+                                        </div>
 
                                         <div style={{
-                                            height: "100vh",
-                                            width: "fit-content",
+                                            width: "100%",
+                                            height: "100%",
+                                            overflowX: "auto",
+                                            display: filterByTab === "AIRCRAFT" ? "flex" : "none",
                                             flexDirection: "column",
-                                            justifyContent: "center",
-                                            display: filterByTab === "AIRCRAFT" ? "flex" : "none"
-                                        }} >
-                                            {
-                                                aircrafts?.filter((aircraft) => {
-                                                    return aircraft.aircraft_no.toUpperCase().includes(filterSearchAircraftNo.toUpperCase())
-                                                }).map((aircraft) => {
-                                                    return (
-                                                        <div className="form-check" key={aircraft.aircraft_id.toString()} style={{ margin: "5px" }}>
-                                                            <input name="filterAircraftId"
-                                                            checked={filterFormData.filterAircraftId.find((data:any)=>data===aircraft.aircraft_id)}
-                                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
-                                                            <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
-                                                                {aircraft.aircraft_no}
-                                                            </label>
-                                                        </div>
-
-                                                    )
-                                                })
-                                            }
-                                        </div>
-                                    </div>
-                                    <div onClick={() => { filterByTab === "TRANSACTION_TYPE" ? setFilterByTab("") : setFilterByTab("TRANSACTION_TYPE") }}
-                                        style={{
-                                            backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
-                                            borderStyle: "solid",
-                                            borderWidth: "0px 0px 2px 0px"
+                                            backgroundColor: filterByTab === "AIRCRAFT" ? "#f5f5f5" : ""
                                         }}
-                                    >
-                                        <label><strong>Transaction Type</strong></label>
-                                    </div>
-                                    <div style={{
-                                        display: filterByTab === "TRANSACTION_TYPE" ? "flex" : "none",
-                                        width: "100%",
-                                        height: "100%",
-                                        backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
-                                        padding: "5px",
-                                        flexDirection: "column"
-                                    }}>
-                                        <div className="form-check" style={{ width: "fit-content" }}>
-                                            <input name="filterTransactionType"
-                                            checked={filterFormData.filterTransactionType.find((data:any)=>data==="IN")}
-                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
-                                            <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
-                                                IN
-                                            </label>
+                                        >
+
+                                            <div style={{
+                                                height: "100vh",
+                                                width: "fit-content",
+                                                flexDirection: "column",
+                                                justifyContent: "center",
+                                                display: filterByTab === "AIRCRAFT" ? "flex" : "none"
+                                            }} >
+                                                {
+                                                    aircrafts?.filter((aircraft) => {
+                                                        return aircraft.aircraft_no.toUpperCase().includes(filterSearchAircraftNo.toUpperCase())
+                                                    }).map((aircraft) => {
+                                                        return (
+                                                            <div className="form-check" key={aircraft.aircraft_id.toString()} style={{ margin: "5px" }}>
+                                                                <input name="filterAircraftId"
+                                                                    checked={filterFormData.filterAircraftId.find((data: any) => data === aircraft.aircraft_id)}
+                                                                    onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value={aircraft.aircraft_id} id={`airportFilterCheckbox${aircraft.aircraft_id}`} />
+                                                                <label className="form-check-label" htmlFor={`airportFilterCheckbox${aircraft.aircraft_id}`}>
+                                                                    {aircraft.aircraft_no}
+                                                                </label>
+                                                            </div>
+
+                                                        )
+                                                    })
+                                                }
+                                            </div>
                                         </div>
-                                        <div className="form-check" style={{ width: "fit-content" }}>
-                                            <input name="filterTransactionType"
-                                            checked={filterFormData.filterTransactionType.find((data:any)=>data==="OUT")}
-                                             onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
-                                            <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
-                                                OUT
-                                            </label>
+                                        <div onClick={() => { filterByTab === "TRANSACTION_TYPE" ? setFilterByTab("") : setFilterByTab("TRANSACTION_TYPE") }}
+                                            style={{
+                                                backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
+                                                borderStyle: "solid",
+                                                borderWidth: "0px 0px 2px 0px"
+                                            }}
+                                        >
+                                            <label><strong>Transaction Type</strong></label>
+                                        </div>
+                                        <div style={{
+                                            display: filterByTab === "TRANSACTION_TYPE" ? "flex" : "none",
+                                            width: "100%",
+                                            height: "100%",
+                                            backgroundColor: filterByTab === "TRANSACTION_TYPE" ? "#f5f5f5" : "",
+                                            padding: "5px",
+                                            flexDirection: "column"
+                                        }}>
+                                            <div className="form-check" style={{ width: "fit-content" }}>
+                                                <input name="filterTransactionType"
+                                                    checked={filterFormData.filterTransactionType.find((data: any) => data === "IN")}
+                                                    onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="IN" id={`airportFilterCheckboxIN`} />
+                                                <label className="form-check-label" htmlFor={`airportFilterCheckboxIN`}>
+                                                    IN
+                                                </label>
+                                            </div>
+                                            <div className="form-check" style={{ width: "fit-content" }}>
+                                                <input name="filterTransactionType"
+                                                    checked={filterFormData.filterTransactionType.find((data: any) => data === "OUT")}
+                                                    onChange={handleFilterFormChangeRadioButton} className="form-check-input" type="checkbox" value="OUT" id={`airportFilterCheckboxOUT`} />
+                                                <label className="form-check-label" htmlFor={`airportFilterCheckboxOUT`}>
+                                                    OUT
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     <div className="col-md-10 container-fluid">
+                        <div className="no-print" style={{ display: "flex", justifyContent: "space-between", margin: "5px" }}>
+                            <button type="button" onClick={() => { setCreateTransactionFormHidden(false) }} className="btn btn-primary no-print">Create new transaction</button>
+                            <span style={{ display: "flex" }}>
+                                <select name="sortBy" onChange={handleSort} style={{ maxWidth: "15rem" }} id="sortBySelect" className="form-select no-print">
+                                    <option value="DATE_HIGH_LOW">Sort by date high to low</option>
+                                    <option value="DATE_LOW_HIGH">Sort by date low to high</option>
+                                    <option value="QUANTITY_LOW_HIGH">Sort by quantity low to high</option>
+                                    <option value="QUANTITY_HIGH_LOW" >Sort by quantity high to low</option>
+                                </select>
+                                <span style={{ width: "10px" }}></span>
+                                <button onClick={() => { window.print() }} className="btn btn-outline-secondary no-print" style={{ right: "5px" }}>Print</button>
+                                <span style={{ width: "10px" }}></span>
+                                <button onClick={handleRefresh} className="btn btn-outline-info no-print" >
+                                    <RefreshBlack /> Refresh
+                                </button>
+                            </span>
+                        </div>
                         <div className="row">
                             <div className="col container" style={{ maxWidth: "100%", minWidth: "80%" }} >
                                 <div className="row justify-content-between" style={{
