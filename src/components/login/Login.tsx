@@ -74,7 +74,7 @@ const Login: FC = (): ReactElement => {
         event.preventDefault();
     }
     return (
-        <div style={{ width: "50%", marginLeft: "25%", marginTop: "20%" }}>
+        <div className="login-signup-container" >
             <h1>Airport Fuel Inventory</h1>
             <br />
             <h2>Login</h2>

@@ -195,6 +195,7 @@ function App() {
 
                   </>
                   :
+                  <div className='login-signup-background'>
                   <Switch>
                     <Route exact path="/">
                       <Login />
@@ -203,6 +204,7 @@ function App() {
                       <Signup />
                     </Route>
                   </Switch>
+                  </div>
               }
             </Router>
           </>

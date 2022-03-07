@@ -61,4 +61,18 @@
    .navbar,.nav, .no-print{
         display: none;
     }
-}   
+}
+
+.login-signup-background{
+  background-image: url('images/aircraft.jpg');
+  height: 100vh;
+}
+.login-signup-container{
+  background-color: #ffffff;
+  height: fit-content;
+  width: 50%;
+  margin-left: 25%;
+  margin-top: 25%;
+  position: absolute;
+  padding: 20px;
+}
