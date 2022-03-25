@@ -8,6 +8,7 @@ import { ReactComponent as RefreshBlack } from '../../svgs/refresh_black_24dp.sv
 import { state } from "../../App";
 import { transactions } from "../transaction/transaction";
 import axios from "axios";
+import CreateAirport from "./CreateAirport";
 
 
 export type airports = airport[]
@@ -27,13 +28,7 @@ const Airport: FC = (): ReactElement => {
     const [count, setCount] = useState(10)
 
     const [createAirportFormHidden, setCreateAirportFormHidden] = useState<boolean>(true)
-    const [createAirportData, setCreateAirportData] = useState<airport>({
-        "airport_id": "",
-        "airport_name": "",
-        "fuel_capacity": 0,
-        "fuel_available": 0
-    })
-    const [createAirportError, setCreateAirportError] = useState("")
+    
 
     const [updateAirportFormHidden, setUpdateAirportFormHidden] = useState<boolean>(true)
     const [updateAirportData, setUpdateAirportData] = useState<airport>({
@@ -85,47 +80,7 @@ const Airport: FC = (): ReactElement => {
 
 
 
-    // Handle create airport form change
-    const handleCreateAirportFormChange = (event: React.FormEvent<HTMLInputElement>) => {
-        let target = event.target as HTMLInputElement
-        setCreateAirportData({ ...createAirportData, [target.name]: target.value })
-    }
-
-    // Submit form to create airport handle function
-    const handleCreateAirportFormSubmit = (event: React.FormEvent) => {
-        console.log(createAirportData)
-        if (createAirportData.airport_id === "") {
-            setCreateAirportError("Airport Id can't be blank.")
-        } else if (createAirportData.airport_name === "") {
-            setCreateAirportError("Airport name can't be blank")
-        } else if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
-            setCreateAirportError("Fuel available can not be greater then fuel capacity")
-        } else if (Number(createAirportData.fuel_available) < 0) {
-            setCreateAirportError("Fuel available can not be less then 0")
-        } else if (Number(createAirportData.fuel_capacity) < 0) {
-            setCreateAirportError("Fuel capacity can not be less then 0")
-        } else {
-            // api call for create transaction
-            authAxios.post('http://localhost:4000/api/v1/airports', createAirportData, {})
-                .then(function (response: any) {
-                    console.log(response);
-                    dispatch(setToasts(response.data.msg, true, 'SUCCESS'))
-                    const targetForm = event.target as HTMLFormElement
-                    targetForm.reset()
-                    setCreateAirportFormHidden(true)
-                    if (response.status === 201) {
-                        dispatch(setAirports([response.data, ...airports]));
-                    }
-
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    dispatch(setToasts(error.response.data.msg, true, 'ERROR'))
-                });
-        }
-
-        event.preventDefault();
-    }
+    
 
     // Handle update airport form change
     const handleUpdateAirportFormChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -225,22 +180,7 @@ const Airport: FC = (): ReactElement => {
         }
     }, [updateAirportData])
 
-    // On create form data change
-    useEffect(() => {
-        if (createAirportData.airport_id === "") {
-            setCreateAirportError("Airport Id can't be blank.")
-        } else if (createAirportData.airport_name === "") {
-            setCreateAirportError("Airport name can't be blank")
-        } else if (Number(createAirportData.fuel_available) > Number(createAirportData.fuel_capacity)) {
-            setCreateAirportError("Fuel available can not be greater then fuel capacity")
-        } else if (Number(createAirportData.fuel_available) < 0) {
-            setCreateAirportError("Fuel available can not be less then 0")
-        } else if (Number(createAirportData.fuel_capacity) < 0) {
-            setCreateAirportError("Fuel capacity can not be less then 0")
-        } else {
-            setCreateAirportError("")
-        }
-    }, [createAirportData])
+
 
 
     // Initial loading
@@ -253,63 +193,11 @@ const Airport: FC = (): ReactElement => {
 
     return (
         <div>
-            <div className={`modal ${createAirportFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${createAirportFormHidden ? 'none' : 'block'}` }}>
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <form onSubmit={handleCreateAirportFormSubmit}>
-                            <div className="modal-header">
-                                <button type="button" onClick={() => { setCreateAirportFormHidden(true) }} className="close btn btn-light" data-dismiss="modal" aria-hidden="true">&times;</button>
-
-                            </div>
-
-                            <div className="modal-body">
-                                <div>
-
-                                    <fieldset >
-                                        <legend>Create Airport</legend>
-
-                                        <div className="mb-3">
-                                            <label className="form-check-label" htmlFor="airport_id">
-                                                Airport Id
-                                            </label>
-                                            <input onChange={handleCreateAirportFormChange}  value="" name="airport_id" type="text" id="airport_id" className="form-control" placeholder="Airport Id" />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-check-label" htmlFor="airport_name">
-                                                Airport Name
-                                            </label>
-                                            <input onChange={handleCreateAirportFormChange} value="" name="airport_name" type="text" id="airport_name" className="form-control" placeholder="Airport Name" />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-check-label" htmlFor="fuel_capacity">
-                                                Fuel Capacity(L)
-                                            </label>
-                                            <input value={0} onChange={handleCreateAirportFormChange} name="fuel_capacity" type="number" min={0} id="fuel_capacity" className="form-control" placeholder="Fuel Capacity" />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-check-label" htmlFor="fuel_available">
-                                                Fuel Available(L)
-                                            </label>
-                                            <input value={0} onChange={handleCreateAirportFormChange} name="fuel_available" type="number" min={0} id="fuel_available" className="form-control" placeholder="Fuel Available" />
-                                        </div>
-                                        <span style={{ color: "#e53935" }}>
-                                            {createAirportError}
-                                        </span>
-                                    </fieldset>
-                                </div>
-
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" onClick={() => { setCreateAirportFormHidden(true) }} className="btn btn-default" data-dismiss="modal">Close</button>
-                                <button disabled={createAirportError === "" ? false : true} type="submit" className="btn btn-primary">Submit</button>
-
-                            </div>
-                        </form>
-                    </div>
-
-                </div>
-
-            </div>
+           <CreateAirport 
+                createAirportFormHidden ={createAirportFormHidden}
+                setCreateAirportFormHidden = {setCreateAirportFormHidden}
+                airports={airports}
+            />
             <div className={`modal ${updateAirportFormHidden ? 'hide' : 'show'}`} style={{ backgroundColor: "#00000063", display: `${updateAirportFormHidden ? 'none' : 'block'}` }}>
                 <div className="modal-dialog">
                     <div className="modal-content">
